@@ -37,6 +37,23 @@ describe('hidden-image iDevice', () => {
     // Reset $exeDevice before loading
     global.$exeDevice = undefined;
 
+    // Mock $exeDevices.iDevice.gamification.helpers for stripHtml
+    global.$exeDevices = {
+      iDevice: {
+        gamification: {
+          helpers: {
+            stripHtml: (html) => {
+              if (!html) return '';
+              const div = { textContent: '' };
+              // Simple mock: just remove tags with regex for testing
+              div.textContent = html.replace(/<[^>]*>/g, '');
+              return div.textContent;
+            },
+          },
+        },
+      },
+    };
+
     // Read and execute the iDevice file
     const filePath = join(__dirname, 'hidden-image.js');
     const code = readFileSync(filePath, 'utf-8');

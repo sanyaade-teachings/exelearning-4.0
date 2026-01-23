@@ -31,6 +31,21 @@ describe('scrambled-list iDevice export', () => {
   beforeEach(() => {
     global.$scrambledlist = undefined;
 
+    // Mock $exeDevices.iDevice.gamification.helpers for stripHtml
+    global.$exeDevices = {
+      iDevice: {
+        gamification: {
+          helpers: {
+            stripHtml: (html) => {
+              if (!html) return '';
+              // Simple mock: just remove tags with regex for testing
+              return html.replace(/<[^>]*>/g, '');
+            },
+          },
+        },
+      },
+    };
+
     const filePath = join(__dirname, 'scrambled-list.js');
     const code = readFileSync(filePath, 'utf-8');
 
