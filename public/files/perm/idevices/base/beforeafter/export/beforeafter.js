@@ -30,7 +30,9 @@ var $eXeBeforeAfter = {
     },
 
     enable: function () {
-        $eXeBeforeAfter.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeBeforeAfter.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -149,9 +151,19 @@ var $eXeBeforeAfter = {
     },
 
     createInterfaceCards: function (instance) {
-        const path = $eXeBeforeAfter.idevicePath,
-            msgs = $eXeBeforeAfter.options[instance].msgs,
-            mOptions = $eXeBeforeAfter.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $eXeBeforeAfter.idevicePath,
+            rawMsgs = $eXeBeforeAfter.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        // Store sanitized msgs for use in other functions
+        $eXeBeforeAfter.options[instance].msgs = msgs;
+        const mOptions = $eXeBeforeAfter.options[instance],
             html = `
         <div class="BFAFP-MainContainer" id="bfafMainContainer-${instance}">
             <div class="BFAFP-GameMinimize" id="bfafGameMinimize-${instance}">

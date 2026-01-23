@@ -45,7 +45,9 @@ var $quickquestionsmultiplechoice = {
     },
 
     enable: function () {
-        $quickquestionsmultiplechoice.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $quickquestionsmultiplechoice.loadGame();
+        });
     },
 
     sendScore: function (auto, instance) {
@@ -135,9 +137,17 @@ var $quickquestionsmultiplechoice = {
     },
 
     createInterfaceSelecciona: function (instance) {
-        const path = $quickquestionsmultiplechoice.idevicePath,
-            msgs = $quickquestionsmultiplechoice.options[instance].msgs,
-            mOptions = $quickquestionsmultiplechoice.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $quickquestionsmultiplechoice.idevicePath,
+            rawMsgs = $quickquestionsmultiplechoice.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const mOptions = $quickquestionsmultiplechoice.options[instance],
             html = `
         <div class="SLCNP-MainContainer" id="seleccionaMainContainer-${instance}">
             <div class="SLCNP-GameMinimize" id="seleccionaGameMinimize-${instance}">

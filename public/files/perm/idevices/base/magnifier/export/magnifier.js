@@ -159,6 +159,17 @@ var $magnifier = {
     },
 
     createInterfaceMagnifier: function (data) {
+        // Sanitize msgs using global helper
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize;
+        const rawMsgs = data.msgs || {};
+        const msgs = {};
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        data.msgs = msgs;
+
         const instance = data.ideviceId;
         let flexDir = '',
             alignItems = '',

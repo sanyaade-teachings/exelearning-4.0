@@ -45,7 +45,9 @@ var $eXeSeleccionaMedias = {
     },
 
     enable: function () {
-        $eXeSeleccionaMedias.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeSeleccionaMedias.loadGame();
+        });
     },
 
     getFixedOrder: function (columns, cards) {
@@ -316,10 +318,18 @@ var $eXeSeleccionaMedias = {
     },
 
     createInterfaceSelecciona: function (instance) {
-        const path = $eXeSeleccionaMedias.idevicePath,
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $eXeSeleccionaMedias.idevicePath,
             mOptions = $eXeSeleccionaMedias.options[instance],
-            msgs = $eXeSeleccionaMedias.options[instance].msgs,
-            html = `<div class="SLCMP-MainContainer" id="slcmpMainContainer-${instance}">
+            rawMsgs = $eXeSeleccionaMedias.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `<div class="SLCMP-MainContainer" id="slcmpMainContainer-${instance}">
             <div class="SLCMP-GameMinimize" id="slcmpGameMinimize-${instance}">
                 <a href="#" class="SLCMP-LinkMaximize" id="slcmpLinkMaximize-${instance}" title="${msgs.msgMaximize}">
                     <img src="${path}slcmpIcon.png"  class="SLCMP-IconMinimize SLCMP-Activo"  alt="">

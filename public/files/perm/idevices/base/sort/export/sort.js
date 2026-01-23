@@ -46,7 +46,9 @@ var $eXeOrdena = {
     },
 
     enable: function () {
-        $eXeOrdena.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeOrdena.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -505,9 +507,17 @@ var $eXeOrdena = {
     },
 
     createInterfaceOrdena: function (instance) {
-        const path = $eXeOrdena.idevicePath,
-            msgs = $eXeOrdena.options[instance].msgs,
-            mOptions = $eXeOrdena.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $eXeOrdena.idevicePath,
+            rawMsgs = $eXeOrdena.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const mOptions = $eXeOrdena.options[instance],
             html = `
             <div class="ODNP-MainContainer" id="ordenaMainContainer-${instance}">
                 <div class="ODNP-GameMinimize" id="ordenaGameMinimize-${instance}">

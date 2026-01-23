@@ -56,7 +56,9 @@ var $quickquestionsvideo = {
     },
 
     enable: function () {
-        $quickquestionsvideo.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $quickquestionsvideo.loadGame();
+        });
     },
 
     saveEvaluation: function (instance) {
@@ -275,15 +277,23 @@ var $quickquestionsvideo = {
     },
 
     createInterfaceVideoQuExt: function (instance) {
-        const path = $quickquestionsvideo.idevicePath,
-            msgs = $quickquestionsvideo.options[instance].msgs,
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $quickquestionsvideo.idevicePath,
+            rawMsgs = $quickquestionsvideo.options[instance].msgs,
             mOptions = $quickquestionsvideo.options[instance];
-        msgs.msgFirstQuestion = msgs.msgFirstQuestion || 'First question';
-        msgs.msgPreviousQuestion =
-            msgs.msgPreviousQuestion || 'Previous question';
-        msgs.msgNextQuestion = msgs.msgNextQuestion || 'Next question';
-        msgs.msgLastQuestion = msgs.msgLastQuestion || 'Last question';
-        msgs.msgQuestionNumber = msgs.msgQuestionNumber || 'Question number';
+        rawMsgs.msgFirstQuestion = rawMsgs.msgFirstQuestion || 'First question';
+        rawMsgs.msgPreviousQuestion =
+            rawMsgs.msgPreviousQuestion || 'Previous question';
+        rawMsgs.msgNextQuestion = rawMsgs.msgNextQuestion || 'Next question';
+        rawMsgs.msgLastQuestion = rawMsgs.msgLastQuestion || 'Last question';
+        rawMsgs.msgQuestionNumber = rawMsgs.msgQuestionNumber || 'Question number';
+        // Sanitize all message strings
+        const msgs = {};
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
 
         const html = `
             <div class="VQXTP-MainContainer" id="vquextMainContainer-${instance}">
@@ -571,7 +581,8 @@ var $quickquestionsvideo = {
                 let id = url
                     .split('https://mediateca.educa.madrid.org/video/')[1]
                     .split('?')[0];
-                id = 'http://mediateca.educa.madrid.org/streaming.php?id=' + id;
+                // Encode the id to prevent URL injection
+                id = 'http://mediateca.educa.madrid.org/streaming.php?id=' + encodeURIComponent(id);
                 return id;
             } else {
                 return '';

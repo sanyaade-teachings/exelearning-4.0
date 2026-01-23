@@ -195,6 +195,19 @@ var $trueorfalse = {
         data.numberQuestions = data.questionsGame.length;
         data.current = 0;
 
+        // Sanitize msgs using global helper
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize;
+        if (data.msgs) {
+            const rawMsgs = data.msgs;
+            const msgs = {};
+            for (const key in rawMsgs) {
+                if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                    msgs[key] = sanitize(rawMsgs[key] || '');
+                }
+            }
+            data.msgs = msgs;
+        }
+
         return data;
     },
 

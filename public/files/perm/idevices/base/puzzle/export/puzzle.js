@@ -44,7 +44,9 @@ var $eXePuzzle = {
     },
 
     enable: function () {
-        $eXePuzzle.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXePuzzle.loadGame();
+        });
     },
 
     stopAllSounds: function (instance) {
@@ -322,9 +324,17 @@ var $eXePuzzle = {
     },
 
     createInterfacePuzzle: function (instance) {
-        const path = $eXePuzzle.idevicePath,
-            msgs = $eXePuzzle.options[instance].msgs,
-            mOptions = $eXePuzzle.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $eXePuzzle.idevicePath,
+            rawMsgs = $eXePuzzle.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const mOptions = $eXePuzzle.options[instance],
             html = `
         <div class="PZLP-MainContainer" id="pzlMainContainer-${instance}">
             <div class="PZLP-GameMinimize" id="pzlGameMinimize-${instance}">

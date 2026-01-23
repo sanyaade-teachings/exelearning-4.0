@@ -132,6 +132,19 @@ var $scrambledlist = {
 
         data.idevice = 'idevice_node';
 
+        // Sanitize msgs using global helper
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize;
+        if (data.msgs) {
+            const rawMsgs = data.msgs;
+            const msgs = {};
+            for (const key in rawMsgs) {
+                if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                    msgs[key] = sanitize(rawMsgs[key] || '');
+                }
+            }
+            data.msgs = msgs;
+        }
+
         return data;
     },
 
@@ -538,9 +551,7 @@ var $scrambledlist = {
      * @returns string
      */
     removeTags: function (str) {
-        var wrapper = $('<div></div>');
-        wrapper.html(str);
-        return wrapper.text();
+        return $exeDevices.iDevice.gamification.helpers.stripHtml(str);
     },
 
     /**
