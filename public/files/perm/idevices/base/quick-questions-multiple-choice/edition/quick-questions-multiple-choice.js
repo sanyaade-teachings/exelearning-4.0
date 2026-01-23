@@ -3452,10 +3452,9 @@ var $exeDevice = {
         $entries.find('ENTRY').each(function () {
             const $this = $(this),
                 concept = $this.find('CONCEPT').text(),
-                definition = $this
-                    .find('DEFINITION')
-                    .text()
-                    .replace(/<[^>]*>/g, '');
+                definition = $exeDevices.iDevice.gamification.helpers.stripHtml(
+                    $this.find('DEFINITION').text()
+                );
             if (concept && definition) {
                 questionsJson.push({
                     solution: concept,
