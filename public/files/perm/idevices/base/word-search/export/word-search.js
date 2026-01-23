@@ -733,11 +733,8 @@ var $eXeSopa = {
 
         $container.find('#sopaLinkAudio-' + instanceId).on('click', (e) => {
             e.preventDefault(mOptions);
-            $exeDevices.iDevice.gamification.media.stopSound(mOptions);
             $exeDevices.iDevice.gamification.media.playSound(
-                mOptions.wordsGame[mOptions.activeQuestion].audio,
-                mOptions
-            );
+                mOptions.wordsGame[mOptions.activeQuestion].audio);
         });
 
         if (mOptions.itinerary.showCodeAccess) {
@@ -806,8 +803,7 @@ var $eXeSopa = {
             .on('click', '.SPP-LinkSound', function (e) {
                 e.preventDefault();
                 $exeDevices.iDevice.gamification.media.playSound(
-                    mOptions.wordsGame[$(this).data('mnumber')].audio,
-                    mOptions
+                    mOptions.wordsGame[$(this).data('mnumber')].audio
                 );
             });
 
@@ -952,7 +948,7 @@ var $eXeSopa = {
         mOptions.gameStarted = false;
         mOptions.gameOver = true;
 
-        $exeDevices.iDevice.gamification.media.stopSound(mOptions);
+        $exeDevices.iDevice.gamification.media.stopSound();
 
         clearInterval(mOptions.counterClock);
         mOptions.activeCounter = false;
@@ -1076,8 +1072,7 @@ var $eXeSopa = {
         $eXeSopa.showMessage(2, message, instanceId);
         if (mOptions.wordsGame[number].audio.length > 4) {
             $exeDevices.iDevice.gamification.media.playSound(
-                mOptions.wordsGame[number].audio,
-                mOptions
+                mOptions.wordsGame[number].audio
             );
         }
 

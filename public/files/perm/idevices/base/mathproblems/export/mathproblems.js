@@ -170,7 +170,8 @@ var $eXeMathProblems = {
         options.questions =
             $exeDevices.iDevice.gamification.helpers.getQuestions(
                 options.questions,
-                options.percentajeQuestions
+                options.percentajeQuestions,
+                options.optionsRamdon
             );
 
         return options;

@@ -567,10 +567,10 @@ var $exeDevice = {
         $('#sopaEAlt').val(p.alt);
 
         $exeDevice.showImage(p.url, p.x, p.y, p.alt);
-        $exeDevice.stopSound();
+        $exeDevicesEdition.iDevice.gamification.helpers.stopSound();
 
         if (p.audio.trim().length > 4) {
-            $exeDevice.playSound(p.audio.trim());
+            $exeDevicesEdition.iDevice.gamification.helpers.playSound(p.audio.trim());
         }
         $('#sopaEURLAudio').val(p.audio);
         $('#sopaENumberQuestion').val(i + 1);
@@ -807,7 +807,7 @@ var $exeDevice = {
                 percentageShow: 100,
             };
 
-        $exeDevice.stopSound();
+        $exeDevicesEdition.iDevice.gamification.helpers.stopSound();
 
         if (p.word.length == 0) {
             message = $exeDevice.msgs.msgEProvideWord;
@@ -1053,8 +1053,7 @@ var $exeDevice = {
             e.preventDefault();
             const selectedFile = $('#sopaEURLAudio').val().trim();
             if (selectedFile.length > 4) {
-                $exeDevice.stopSound();
-                $exeDevice.playSound(selectedFile);
+                $exeDevicesEdition.iDevice.gamification.helpers.playSound(selectedFile);
             }
         });
 
@@ -1173,8 +1172,8 @@ var $exeDevice = {
                 );
             } else {
                 if (selectedFile.length > 4) {
-                    $exeDevice.stopSound();
-                    $exeDevice.playSound(selectedFile);
+                    $exeDevicesEdition.iDevice.gamification.helpers.stopSound();
+                    $exeDevicesEdition.iDevice.gamification.helpers.playSound(selectedFile);
                 }
             }
         });
