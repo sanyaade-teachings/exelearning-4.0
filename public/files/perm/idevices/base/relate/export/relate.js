@@ -32,7 +32,9 @@ var $eXeRelaciona = {
     },
 
     enable: function () {
-        $eXeRelaciona.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeRelaciona.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -462,9 +464,16 @@ var $eXeRelaciona = {
 
     createInterfaceCards: function (instance) {
         const path = $eXeRelaciona.idevicePath,
-            msgs = $eXeRelaciona.options[instance].msgs,
-            mOptions = $eXeRelaciona.options[instance],
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $eXeRelaciona.options[instance].msgs,
+            msgs = {},
+            mOptions = $eXeRelaciona.options[instance];
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
         <div class="RLCP-MainContainer" id="rlcMainContainer-${instance}">
             <div class="RLCP-GameMinimize" id="rlcGameMinimize-${instance}">
                 <a href="#" class="RLCP-LinkMaximize" id="rlcLinkMaximize-${instance}" title="${msgs.msgMaximize}">

@@ -35,7 +35,9 @@ var $eXeDragDrop = {
     },
 
     enable: function () {
-        $eXeDragDrop.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeDragDrop.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -508,9 +510,16 @@ var $eXeDragDrop = {
 
     createInterfaceCards: function (instance) {
         const path = $eXeDragDrop.idevicePath,
-            msgs = $eXeDragDrop.options[instance].msgs,
-            mOptions = $eXeDragDrop.options[instance],
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $eXeDragDrop.options[instance].msgs,
+            msgs = {},
+            mOptions = $eXeDragDrop.options[instance];
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
         <div class="DADP-MainContainer" id="dadPMainContainer-${instance}">
             <div class="DADP-GameMinimize" id="dadPGameMinimize-${instance}">
                 <a href="#" class="DADP-LinkMaximize" id="dadPLinkMaximize-${instance}" title="${msgs.msgMaximize}">

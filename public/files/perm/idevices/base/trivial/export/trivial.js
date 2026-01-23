@@ -71,7 +71,9 @@ var $eXeTrivial = {
     },
 
     enable: function () {
-        $eXeTrivial.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeTrivial.loadGame();
+        });
     },
 
     saveDataStorage: function (instance) {
@@ -259,9 +261,16 @@ var $eXeTrivial = {
 
     createInterfaceTrivial: function (instance) {
         const path = $eXeTrivial.idevicePath,
-            msgs = $eXeTrivial.options[instance].msgs,
-            mOptions = $eXeTrivial.options[instance],
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $eXeTrivial.options[instance].msgs,
+            msgs = {},
+            mOptions = $eXeTrivial.options[instance];
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
             <div class="trivial-MainContainer" id="trivialMainContainer-${instance}">
                 <div class="trivial-GameMinimize" id="trivialGameMinimize-${instance}">
                     <a href="#" class="trivial-LinkMaximize" id="trivialLinkMaximize-${instance}" title="${msgs.msgMaximize}">
@@ -466,8 +475,15 @@ var $eXeTrivial = {
 
     createInterfaceQuestion: function (instance) {
         const path = $eXeTrivial.idevicePath,
-            msgs = $eXeTrivial.options[instance].msgs,
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $eXeTrivial.options[instance].msgs,
+            msgs = {};
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
             <div class="trivial-GameQuestion" id="trivialGameQuestion-${instance}">
                 <div class="trivial-TimeNumber">
                     <p id="trivialPTime-${instance}" class="trivial-PTime">

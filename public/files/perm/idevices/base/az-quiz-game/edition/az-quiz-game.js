@@ -1234,10 +1234,9 @@ var $exeDevice = {
         const words = [];
         $entries.find('ENTRY').each(function () {
             const concept = $(this).find('CONCEPT').text(),
-                definition = $(this)
-                    .find('DEFINITION')
-                    .text()
-                    .replace(/<[^>]*>/g, '');
+                definition = $exeDevices.iDevice.gamification.helpers.stripHtml(
+                    $(this).find('DEFINITION').text()
+                );
             if (concept && definition) {
                 words.push(`${concept}#${definition}`);
             }

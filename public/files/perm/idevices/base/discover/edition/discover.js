@@ -1743,10 +1743,9 @@ var $exeDevice = {
             .find('ENTRY')
             .map((_, entry) => {
                 const concept = $(entry).find('CONCEPT').text(),
-                    definition = $(entry)
-                        .find('DEFINITION')
-                        .text()
-                        .replace(/<[^>]*>/g, '');
+                    definition = $exeDevices.iDevice.gamification.helpers.stripHtml(
+                        $(entry).find('DEFINITION').text()
+                    );
                 return concept && definition
                     ? { eText: concept, eTextBk: definition }
                     : null;

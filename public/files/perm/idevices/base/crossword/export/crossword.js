@@ -1795,7 +1795,9 @@ var $eXeCrucigrama = {
     },
 
     enable: function () {
-        $eXeCrucigrama.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeCrucigrama.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -1979,9 +1981,17 @@ var $eXeCrucigrama = {
     },
 
     createInterfaceCrucigrama: function (instance) {
-        const path = $eXeCrucigrama.idevicePath,
-            msgs = $eXeCrucigrama.options[instance].msgs,
-            mOptions = $eXeCrucigrama.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $eXeCrucigrama.idevicePath,
+            rawMsgs = $eXeCrucigrama.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const mOptions = $eXeCrucigrama.options[instance],
             html = `
             <div class="CCGMP-MainContainer" id="ccgmMainContainer-${instance}">
                 <div class="CCGMP-GameMinimize" id="ccgmGameMinimize-${instance}">

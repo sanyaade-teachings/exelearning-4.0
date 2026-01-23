@@ -1643,10 +1643,9 @@ var $exeDevice = {
         $entries.find('ENTRY').each(function () {
             const $this = $(this),
                 concept = $this.find('CONCEPT').text(),
-                definition = $this
-                    .find('DEFINITION')
-                    .text()
-                    .replace(/<[^>]*>/g, ''); // Elimina HTML
+                definition = $exeDevices.iDevice.gamification.helpers.stripHtml(
+                    $this.find('DEFINITION').text()
+                );
             if (concept && definition) {
                 cardsJson.push({
                     eText: concept,
@@ -1793,10 +1792,9 @@ var $exeDevice = {
             .find('ENTRY')
             .map((_, entry) => {
                 const concept = $(entry).find('CONCEPT').text(),
-                    definition = $(entry)
-                        .find('DEFINITION')
-                        .text()
-                        .replace(/<[^>]*>/g, '');
+                    definition = $exeDevices.iDevice.gamification.helpers.stripHtml(
+                        $(entry).find('DEFINITION').text()
+                    );
                 return concept && definition
                     ? { eText: concept, eTextBk: definition }
                     : null;

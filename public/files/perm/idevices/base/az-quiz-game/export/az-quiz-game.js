@@ -51,7 +51,9 @@ var $azquizgame = {
     },
 
     enable: function () {
-        $azquizgame.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $azquizgame.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -160,13 +162,21 @@ var $azquizgame = {
     },
 
     createInterfaceRosco: function (instance) {
-        const aLetters = this.getLettersRosco(instance),
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            aLetters = this.getLettersRosco(instance),
             mOptions = this.options[instance],
             sTime = $exeDevices.iDevice.gamification.helpers.getTimeToString(
                 mOptions.durationGame
             ),
-            msgs = mOptions.msgs,
-            path = $azquizgame.idevicePath,
+            rawMsgs = mOptions.msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const path = $azquizgame.idevicePath,
             html = `
             <div class="rosco-IdeviceForm">
                 <div class="rosco-Main" id="roscoMain-${instance}">

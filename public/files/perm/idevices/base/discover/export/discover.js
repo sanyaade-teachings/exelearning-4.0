@@ -46,7 +46,9 @@ var $eXeDescubre = {
     },
 
     enable: function () {
-        $eXeDescubre.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeDescubre.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -617,9 +619,16 @@ var $eXeDescubre = {
 
     createInterfaceDescubre: function (instance) {
         const path = $eXeDescubre.idevicePath,
-            msgs = $eXeDescubre.options[instance].msgs,
-            mOptions = $eXeDescubre.options[instance],
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $eXeDescubre.options[instance].msgs,
+            msgs = {},
+            mOptions = $eXeDescubre.options[instance];
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
         <div class="DescubreQP-MainContainer"  id="descubreMainContainer-${instance}">
             <div class="DescubreQP-GameMinimize" id="descubreGameMinimize-${instance}">
                 <a href="#" class="DescubreQP-LinkMaximize" id="descubreLinkMaximize-${instance}" title="${msgs.msgMaximize}">

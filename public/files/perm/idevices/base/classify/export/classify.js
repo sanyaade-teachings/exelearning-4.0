@@ -45,7 +45,9 @@ var $eXeClasifica = {
         );
     },
     enable: function () {
-        $eXeClasifica.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeClasifica.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -170,10 +172,18 @@ var $eXeClasifica = {
     },
 
     createInterfaceClasifica: function (instance) {
-        const path = $eXeClasifica.idevicePath,
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $eXeClasifica.idevicePath,
             mOptions = $eXeClasifica.options[instance],
-            msgs = $eXeClasifica.options[instance].msgs,
-            groups = $eXeClasifica.options[instance].groups,
+            rawMsgs = $eXeClasifica.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const groups = $eXeClasifica.options[instance].groups,
             html = `
         <div class="CQP-MainContainer" id="clasificaMainContainer-${instance}">
             <div class="CQP-GameMinimize" id="clasificaGameMinimize-${instance}">

@@ -35,7 +35,9 @@ var $guess = {
     },
 
     enable: function () {
-        $guess.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $guess.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -313,9 +315,17 @@ var $guess = {
     },
 
     createInterfaceAdivina: function (instance) {
-        const path = $guess.idevicePath,
-            msgs = $guess.options[instance].msgs,
-            mOptions = $guess.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $guess.idevicePath,
+            rawMsgs = $guess.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const mOptions = $guess.options[instance],
             html = `
         <div class="ADVNP-MainContainer" id="adivinaMainContainer-${instance}">
             <div class="ADVNP-GameMinimize" id="adivinaGameMinimize-${instance}">
