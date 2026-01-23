@@ -39,15 +39,18 @@ var $rubric = {
             var id = ideviceElement.getAttribute('id');
 
             var i18n = $rubric.ci18n;
+            var sanitize = $exeDevices.iDevice.gamification.helpers.sanitize;
+            var applyText = sanitize(i18n.apply || '');
+            var newWindowText = sanitize((i18n.newWindow || '').toLowerCase());
             var applyLink =
                 '<a href="#" class="exe-rubrics-print" id="print-' +
                 id +
                 '"title="' +
-                i18n.apply +
+                applyText +
                 ' (' +
-                i18n.newWindow.toLowerCase() +
+                newWindowText +
                 ')"><span>' +
-                i18n.apply +
+                applyText +
                 '</span></a>';
             $('caption', table).append(applyLink);
             $('#print-' + id).click(function () {
@@ -169,6 +172,11 @@ var $rubric = {
         if (window.location.host == 'localhost:41309') {
             return false; // To review (Electron)
         }
+        // Sanitize inputs
+        var sanitize = $exeDevices.iDevice.gamification.helpers.sanitize;
+        tit = sanitize(tit || '');
+        html = sanitize(html || '');
+
         var rubricStyle, rubricScript, jqueryScript;
         var isBlob = window.location.protocol === 'blob:';
         if (isBlob) {
@@ -187,8 +195,14 @@ var $rubric = {
             jqueryScript = 'libs/jquery/jquery.min.js';
             if (!isIndex) jqueryScript = '../' + jqueryScript;
         }
-        // Strings
-        var i18n = this.ci18n;
+        // Sanitize i18n strings
+        var rawI18n = this.ci18n;
+        var i18n = {};
+        for (var key in rawI18n) {
+            if (Object.prototype.hasOwnProperty.call(rawI18n, key)) {
+                i18n[key] = sanitize(rawI18n[key] || '');
+            }
+        }
         var a = window.open(tit);
         a.document.open('text/html');
         a.document.write(
@@ -273,5 +287,7 @@ var $rubric = {
 };
 
 $(function () {
-    $rubric.init();
+    $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+        $rubric.init();
+    });
 });

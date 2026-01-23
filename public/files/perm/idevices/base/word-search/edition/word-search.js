@@ -195,12 +195,10 @@ var $exeDevice = {
         if ($entries.length === 0) return false;
 
         const words = [];
+        const stripHtml = $exeDevices.iDevice.gamification.helpers.stripHtml;
         $entries.find('ENTRY').each(function () {
             const concept = $(this).find('CONCEPT').text(),
-                definition = $(this)
-                    .find('DEFINITION')
-                    .text()
-                    .replace(/<[^>]*>/g, '');
+                definition = stripHtml($(this).find('DEFINITION').text());
             if (
                 concept &&
                 definition &&

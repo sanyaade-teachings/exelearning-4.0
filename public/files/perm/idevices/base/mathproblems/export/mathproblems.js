@@ -52,7 +52,9 @@ var $eXeMathProblems = {
     },
 
     enable: function () {
-        $eXeMathProblems.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeMathProblems.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -511,9 +513,17 @@ var $eXeMathProblems = {
         return txt;
     },
     createInterfaceMathP: function (instance) {
-        const path = $eXeMathProblems.idevicePath,
-            msgs = $eXeMathProblems.options[instance].msgs,
-            mOptions = $eXeMathProblems.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $eXeMathProblems.idevicePath,
+            rawMsgs = $eXeMathProblems.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const mOptions = $eXeMathProblems.options[instance],
             html = `
             <div class="MTHP-MainContainer" id="mthpMainContainer-${instance}">
                 <div class="MTHP-GameMinimize" id="mthpGameMinimize-${instance}">

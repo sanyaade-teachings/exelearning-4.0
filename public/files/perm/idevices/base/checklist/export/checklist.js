@@ -13,6 +13,7 @@ var $eXeListaCotejo = {
     options: [],
     isInExe: false,
     data: null,
+
     init: function () {
         this.isInExe = eXe.app.isInExe(); //eXe 3.0
         this.idevicePath = this.isInExe
@@ -43,7 +44,9 @@ var $eXeListaCotejo = {
     },
 
     enable: function () {
-        $eXeListaCotejo.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeListaCotejo.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -216,6 +219,7 @@ var $eXeListaCotejo = {
 
     createInterfaceListaCotejo: function (instance) {
         const mOptions = $eXeListaCotejo.options[instance],
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
             urll =
                 mOptions.urlLogo ||
                 `${$eXeListaCotejo.idevicePath}cotejologo.png`,
@@ -232,10 +236,12 @@ var $eXeListaCotejo = {
             dl = mOptions.hasLogo ? 'block' : 'none',
             dc = mOptions.hasCommunity ? 'block' : 'none',
             dd = mOptions.hasDecorative && !isMobile ? 'block' : 'none',
-            footer = mOptions.footer || '',
+            footer = sanitize(mOptions.footer || ''),
             df = footer ? 'block' : 'none',
             ud = mOptions.userData ? 'flex' : 'none',
             us = mOptions.userScore ? 'block' : 'none',
+            safeTitle = sanitize(mOptions.title || ''),
+            safeSubtitle = sanitize(mOptions.subtitle || ''),
             html = `
             <div class="CTJP-MainContainer"  id="ctjMainContainer-${instance}">
                 <div class="CTJP-GameContainer" id="ctjGameContainer-${instance}">
@@ -244,8 +250,8 @@ var $eXeListaCotejo = {
                             <div class="CTJP-Images" style="background-image:url(${urlc}); display:${dc};"></div>
                             <div class="CTJP-Images" style="background-image:url(${urll}); display:${dl};"></div>
                         </div>
-                        <div id="ctjTitle-${instance}" class="CTJP-Title">${mOptions.title}</div>
-                        <div id="ctjSubTitle-${instance}" class="CTJP-SubTitle">${mOptions.subtitle}</div>
+                        <div id="ctjTitle-${instance}" class="CTJP-Title">${safeTitle}</div>
+                        <div id="ctjSubTitle-${instance}" class="CTJP-SubTitle">${safeSubtitle}</div>
                         <div id="ctjUserData-${instance}" class="CTJP-UserData" style="display:${ud};">
                             <div id="ctjUserNameDiv-${instance}" class="CTJP-UserName flex-nowrap" style="width:100%">
                                 <label for="ctjUserName-${instance}" class="form-control-label">${mOptions.msgs.msgName}: </label>
@@ -538,9 +544,11 @@ var $eXeListaCotejo = {
 
     createItems: function (instance) {
         const mOptions = $eXeListaCotejo.options[instance];
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize;
         let html = '';
         for (let i = 0; i < mOptions.levels.length; i++) {
             const level = mOptions.levels[i];
+            const safeItem = sanitize(level.item || '');
             const marginLeft = 1.5 * parseInt(level.nivel) + 0.5,
                 msgp =
                     level.points.trim() == '1'
@@ -559,7 +567,7 @@ var $eXeListaCotejo = {
                             <input type="checkbox" id="${cid}" class="toggle-input" />
                             <span class="toggle-visual"></span>
                         </div>
-                        <label class="toggle-label" for="${cid}">${level.item}</label>
+                        <label class="toggle-label" for="${cid}">${safeItem}</label>
                         <span class="CTJP-Points">${points}</span>
                 </div>`;
             } else if (level.type === '1') {
@@ -569,7 +577,7 @@ var $eXeListaCotejo = {
                             <input type="checkbox" id="${cid}" class="toggle-input" />
                             <span class="toggle-visual"></span>
                         </div>
-                        <label class="toggle-label" for="${cid}">${level.item}</label>
+                        <label class="toggle-label" for="${cid}">${safeItem}</label>
                         <div class="d-flex align-item-center flex-nowrap">
                             <span class="CTJP-Points">${points}</span>
                             <input type="text" class="form-control form-control-sm"  style=" max-width:10em; margin-right:3px"/>
@@ -583,12 +591,12 @@ var $eXeListaCotejo = {
                         <option value="2">${mOptions.msgs.msgInProgress}</option>
                         <option value="3">${mOptions.msgs.msgUnrealized}</option>
                     </select>
-                    <span>${level.item}</span>
+                    <span>${safeItem}</span>
                     <span class="CTJP-Points">${points}</span>
                 </div>`;
             } else if (level.type === '3') {
                 html += `<div class="CTJP-Item d-flex align-item-center flex-nowrap">
-                    <span style="display:inline-block;margin-left:${marginLeft}em">${level.item}</span>
+                    <span style="display:inline-block;margin-left:${marginLeft}em">${safeItem}</span>
                     <span class="CTJP-Points">${points}</span>
                 </div>`;
             }

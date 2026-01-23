@@ -59,7 +59,9 @@ var $periodicTable = {
     },
 
     enable: function () {
-        $periodicTable.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $periodicTable.loadGame();
+        });
     },
 
     setTableData: function (instance) {
@@ -180,8 +182,16 @@ var $periodicTable = {
     createInterfacePT: function (instance) {
         const mOptions = $periodicTable.options[instance];
         const path = $periodicTable.idevicePath,
-            msgs = $periodicTable.options[instance].msgs,
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $periodicTable.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
             <div class="PTP-MainContainer" id="ptMainContainer-${instance}">
                 <div class="PTP-GameMinimize" id="ptGameMinimize-${instance}">
                     <a href="#" class="PTP-LinkMaximize" id="ptLinkMaximize-${instance}" title="${msgs.msgMaximize}">

@@ -118,13 +118,17 @@ var $geogebraactivity = {
                 if (author.length == 1 && author.text() != '') {
                     let math = author.text().split(',');
                     if (math.length == 5 && math[3] == '1') {
+                        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize;
+                        const safeLabel = sanitize(unescape(math[4]));
+                        const safeUrl = encodeURI(unescape(math[1]));
+                        const safeName = sanitize(unescape(math[0]));
                         ath =
                             '<div class="auto-geogebra-author">' +
-                            unescape(math[4]) +
+                            safeLabel +
                             ': <a href="' +
-                            unescape(math[1]) +
+                            safeUrl +
                             '" target="_blank">' +
-                            unescape(math[0]) +
+                            safeName +
                             '</a></div>';
                     }
                 }

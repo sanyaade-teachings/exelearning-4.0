@@ -50,7 +50,9 @@ var $eXeHiddenImage = {
     },
 
     enable: function () {
-        $eXeHiddenImage.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeHiddenImage.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -155,9 +157,17 @@ var $eXeHiddenImage = {
 
     createInterfacehiP: function (instance) {
         const path = $eXeHiddenImage.idevicePath,
-            msgs = $eXeHiddenImage.options[instance].msgs,
-            mOptions = $eXeHiddenImage.options[instance],
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $eXeHiddenImage.options[instance].msgs,
+            msgs = {},
+            mOptions = $eXeHiddenImage.options[instance];
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
             <div class="HIP-MainContainer" id="hiPMainContainer-${instance}">
                 <div class="HIP-GameMinimize" id="hiPGameMinimize-${instance}">
                     <a href="#" class="HIP-LinkMaximize" id="hiPLinkMaximize-${instance}" title="${msgs.msgMaximize}">

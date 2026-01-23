@@ -1847,6 +1847,48 @@ var $exeDevices = {
             },
 
             helpers: {
+                purifyLoaded: false,
+
+                sanitize: function (html) {
+                    if (typeof DOMPurify !== 'undefined') {
+                        return DOMPurify.sanitize(html);
+                    }
+                    // Fallback: escape HTML if DOMPurify not available
+                    const div = document.createElement('div');
+                    div.textContent = html;
+                    return div.innerHTML;
+                },
+
+                ensureDOMPurify: function (callback) {
+                    const helpers = $exeDevices.iDevice.gamification.helpers;
+                    if (typeof DOMPurify !== 'undefined') {
+                        helpers.purifyLoaded = true;
+                        if (callback) callback();
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js';
+                    script.onload = function () {
+                        helpers.purifyLoaded = true;
+                        if (callback) callback();
+                    };
+                    script.onerror = function () {
+                        console.warn('DOMPurify could not be loaded, using fallback sanitization');
+                        if (callback) callback();
+                    };
+                    document.head.appendChild(script);
+                },
+
+                stripHtml: function (html) {
+                    if (typeof DOMPurify !== 'undefined') {
+                        return DOMPurify.sanitize(html, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+                    }
+                    // Fallback: use DOM to extract text content safely
+                    const div = document.createElement('div');
+                    div.innerHTML = html;
+                    return div.textContent || div.innerText || '';
+                },
+
                 sanitizeJSONString: function (jsonString) {
                     if (typeof jsonString !== 'string' || jsonString === '') return jsonString;
 

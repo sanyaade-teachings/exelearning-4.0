@@ -47,7 +47,9 @@ var $eXeSopa = {
     },
 
     enable: function () {
-        $eXeSopa.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeSopa.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -313,9 +315,17 @@ var $eXeSopa = {
 
     createInterfaceSopa: function (instanceId) {
         const path = $eXeSopa.idevicePath,
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
             mOptions = $eXeSopa.instances[instanceId],
-            msgs = mOptions.msgs,
-            html = `
+            rawMsgs = mOptions.msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
         <div class="SPP-MainContainer" id="sopaMainContainer-${instanceId}" data-instance="${instanceId}">
             <div class="SPP-GameMinimize" id="sopaGameMinimize-${instanceId}">
                 <a href="#" class="SPP-LinkMaximize" id="sopaLinkMaximize-${instanceId}" title="${msgs.msgMaximize}">

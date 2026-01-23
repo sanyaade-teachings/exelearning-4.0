@@ -67,7 +67,9 @@ var $quickquestions = {
     },
 
     enable: function () {
-        $quickquestions.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $quickquestions.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -214,9 +216,17 @@ var $quickquestions = {
     },
 
     createInterfaceQuExt: function (instance) {
-        const path = $quickquestions.idevicePath,
-            msgs = $quickquestions.options[instance].msgs,
-            mOptions = $quickquestions.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $quickquestions.idevicePath,
+            rawMsgs = $quickquestions.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const mOptions = $quickquestions.options[instance],
             html = `
             <div class="QXTP-MainContainer" id="quextMainContainer-${instance}">
                 <div class="QXTP-GameMinimize" id="quextGameMinimize-${instance}">

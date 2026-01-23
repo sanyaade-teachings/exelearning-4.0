@@ -1058,9 +1058,7 @@ var $exeDevice = {
     },
 
     removeTags: function (str) {
-        const wrapper = $('<div></div>');
-        wrapper.html(str);
-        return wrapper.text();
+        return $exeDevices.iDevice.gamification.helpers.stripHtml(str);
     },
 
     addEvents: function () {

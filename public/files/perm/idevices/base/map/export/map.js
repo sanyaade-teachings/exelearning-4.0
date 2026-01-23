@@ -56,7 +56,9 @@ var $eXeMapa = {
     },
 
     enable: function () {
-        $eXeMapa.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeMapa.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -1800,9 +1802,17 @@ var $eXeMapa = {
 
     createInterfaceMapa: function (instance) {
         const path = $eXeMapa.idevicePath,
-            msgs = $eXeMapa.options[instance].msgs,
-            mOptions = $eXeMapa.options[instance],
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $eXeMapa.options[instance].msgs,
+            msgs = {},
+            mOptions = $eXeMapa.options[instance];
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
             <div class="MQP-MainContainer" id="mapaMainContainer-${instance}">
                 <div class="MQP-GameMinimize" id="mapaGameMinimize-${instance}">
                     <a href="#" class="MQP-LinkMaximize" id="mapaLinkMaximize-${instance}" title="${msgs.msgGoActivity}">

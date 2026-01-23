@@ -60,7 +60,9 @@ var $eXeMathOperations = {
     },
 
     enable: function () {
-        $eXeMathOperations.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeMathOperations.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -308,9 +310,17 @@ var $eXeMathOperations = {
     },
 
     createInterfaceMathO: function (instance) {
-        const path = $eXeMathOperations.idevicePath,
-            msgs = $eXeMathOperations.options[instance].msgs,
-            mOptions = $eXeMathOperations.options[instance],
+        const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            path = $eXeMathOperations.idevicePath,
+            rawMsgs = $eXeMathOperations.options[instance].msgs,
+            msgs = {};
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const mOptions = $eXeMathOperations.options[instance],
             html = `
             <div class="MTHO-MainContainer" id="mthoMainContainer-${instance}">
                 <div class="MTHO-GameMinimize" id="mthoGameMinimize-${instance}">

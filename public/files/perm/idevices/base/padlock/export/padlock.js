@@ -46,7 +46,9 @@ var $padlock = {
     },
 
     enable: function () {
-        $padlock.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $padlock.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -113,9 +115,17 @@ var $padlock = {
 
     createInterfaceCandado: function (instance) {
         const path = $padlock.idevicePath,
-            msgs = $padlock.options[instance].msgs,
-            mOptions = $padlock.options[instance],
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $padlock.options[instance].msgs,
+            msgs = {},
+            mOptions = $padlock.options[instance];
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
         <div class="candado-MainContainer" id="candadoMainContainer-${instance}">
             <div class="candado-GameMinimize" id="candadoGameMinimize-${instance}">
                 <a href="#" class="candado-LinkMaximize" id="candadoLinkMaximize-${instance}" title="${msgs.msgMaximize}">

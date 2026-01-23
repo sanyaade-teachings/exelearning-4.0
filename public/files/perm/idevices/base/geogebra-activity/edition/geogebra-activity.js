@@ -508,13 +508,19 @@ var $exeDevice = {
             if (author.length == 1) {
                 let alt = author.text().split(',');
                 if (alt.length == 5) {
-                    $('#geogebraActivityAuthorURL').text(unescape(alt[0]));
+                    const sanitize = $exeDevices.iDevice.gamification.helpers.sanitize;
+                    $('#geogebraActivityAuthorURL').text(sanitize(unescape(alt[0])));
                     $('#geogebraActivityTitle')
                         .find('a')
-                        .text(unescape(alt[2]));
+                        .text(sanitize(unescape(alt[2])));
+                    // Only allow http/https URLs for security
+                    let authorUrl = unescape(alt[1]);
+                    if (!/^https?:\/\//i.test(authorUrl)) {
+                        authorUrl = '';
+                    }
                     $('#geogebraActivityTitle')
                         .find('a')
-                        .prop('href', unescape(alt[1]));
+                        .prop('href', authorUrl);
                 }
             }
         }

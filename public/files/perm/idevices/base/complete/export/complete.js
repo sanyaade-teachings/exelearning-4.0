@@ -46,7 +46,9 @@ var $eXeCompleta = {
     },
 
     enable: function () {
-        $eXeCompleta.loadGame();
+        $exeDevices.iDevice.gamification.helpers.ensureDOMPurify(function () {
+            $eXeCompleta.loadGame();
+        });
     },
 
     loadGame: function () {
@@ -145,9 +147,17 @@ var $eXeCompleta = {
 
     createInterfaceCompleta: function (instance) {
         const path = $eXeCompleta.idevicePath,
-            msgs = $eXeCompleta.options[instance].msgs,
-            mOptions = $eXeCompleta.options[instance],
-            html = `
+            sanitize = $exeDevices.iDevice.gamification.helpers.sanitize,
+            rawMsgs = $eXeCompleta.options[instance].msgs,
+            msgs = {},
+            mOptions = $eXeCompleta.options[instance];
+        // Sanitize all message strings
+        for (const key in rawMsgs) {
+            if (Object.prototype.hasOwnProperty.call(rawMsgs, key)) {
+                msgs[key] = sanitize(rawMsgs[key] || '');
+            }
+        }
+        const html = `
         <div class="CMPT-MainContainer" id="cmptMainContainer-${instance}">
             <div class="CMPT-GameMinimize" id="cmptGameMinimize-${instance}">
                 <a href="#" class="CMPT-LinkMaximize" id="cmptLinkMaximize-${instance}" title="${msgs.msgMaximize}">

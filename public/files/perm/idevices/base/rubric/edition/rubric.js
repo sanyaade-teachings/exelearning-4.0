@@ -1082,9 +1082,7 @@ var $exeDevice = {
 
     // Remove any HTML tags
     removeTags: function (str) {
-        var wrapper = $('<div></div>');
-        wrapper.html(str);
-        return wrapper.text();
+        return $exeDevices.iDevice.gamification.helpers.stripHtml(str);
     },
 
     // Transform the editable table into a normal one
