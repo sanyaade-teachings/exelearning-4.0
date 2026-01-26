@@ -94,6 +94,43 @@ describe('three-d-viewer iDevice (edition)', () => {
         });
     });
 
+    describe('isStaticMode', () => {
+        it('returns true when config.isStaticMode is true', () => {
+            global.eXeLearning.config = { isStaticMode: true };
+            expect($exeDevice.isStaticMode()).toBe(true);
+        });
+
+        it('returns true when config.isOfflineInstallation is true', () => {
+            global.eXeLearning.config = { isOfflineInstallation: true };
+            expect($exeDevice.isStaticMode()).toBe(true);
+        });
+
+        it('returns false when neither flag is set', () => {
+            global.eXeLearning.config = {};
+            expect($exeDevice.isStaticMode()).toBe(false);
+        });
+
+        it('returns false when config is undefined', () => {
+            global.eXeLearning.config = undefined;
+            expect($exeDevice.isStaticMode()).toBe(false);
+        });
+
+        it('handles string config (JSON)', () => {
+            global.eXeLearning.config = '{"isStaticMode":true}';
+            expect($exeDevice.isStaticMode()).toBe(true);
+        });
+
+        it('handles invalid JSON string gracefully', () => {
+            global.eXeLearning.config = 'not valid json';
+            expect($exeDevice.isStaticMode()).toBe(false);
+        });
+
+        it('returns true when both flags are true', () => {
+            global.eXeLearning.config = { isStaticMode: true, isOfflineInstallation: true };
+            expect($exeDevice.isStaticMode()).toBe(true);
+        });
+    });
+
     describe('getThreeJSBaseUrl', () => {
         const expectedPath = 'files/perm/idevices/base/three-d-viewer/edition/';
 
@@ -241,6 +278,84 @@ describe('three-d-viewer iDevice (edition)', () => {
                 expect(result, `Failed for config: ${JSON.stringify(config)}`).toMatch(/^https?:\/\//);
             }
         });
+
+        it('ignores basePath in static mode to avoid path duplication', () => {
+            global.eXeLearning.config = { isStaticMode: true };
+            global.eXeLearning.symfony = {
+                baseURL: '.',
+                basePath: 'pr-preview/pr-888',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            // Should use origin directly without basePath
+            expect(result).toBe(`http://localhost:8080/${expectedPath}`);
+            // Should NOT contain the basePath (which would cause duplication)
+            expect(result).not.toContain('pr-preview');
+        });
+
+        it('uses origin + path in static offline installation mode', () => {
+            global.eXeLearning.config = { isOfflineInstallation: true };
+            global.eXeLearning.symfony = {
+                baseURL: '.',
+                basePath: 'some/deep/path',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`http://localhost:8080/${expectedPath}`);
+            expect(result).not.toContain('some/deep/path');
+        });
+    });
+
+    describe('getModelViewerLibUrl', () => {
+        const expectedLibPath = 'files/perm/idevices/base/three-d-viewer/export/model-viewer.min.js';
+
+        it('returns relative path in static mode', () => {
+            global.eXeLearning.config = { isStaticMode: true };
+            global.eXeLearning.symfony = {
+                baseURL: '.',
+                basePath: 'pr-preview/pr-888',
+            };
+
+            const result = $exeDevice.getModelViewerLibUrl();
+
+            expect(result).toBe(`./${expectedLibPath}`);
+            // Should NOT contain basePath (which would cause duplication)
+            expect(result).not.toContain('pr-preview');
+        });
+
+        it('returns relative path in offline installation mode', () => {
+            global.eXeLearning.config = { isOfflineInstallation: true };
+
+            const result = $exeDevice.getModelViewerLibUrl();
+
+            expect(result).toBe(`./${expectedLibPath}`);
+        });
+
+        it('uses resolveAssetUrl in normal (non-static) mode', () => {
+            global.eXeLearning.config = {};
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com',
+                basePath: 'app',
+            };
+
+            const result = $exeDevice.getModelViewerLibUrl();
+
+            expect(result).toBe(`https://example.com/app/${expectedLibPath}`);
+        });
+
+        it('uses resolveAssetUrl when config is undefined', () => {
+            global.eXeLearning.config = undefined;
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com',
+                basePath: '',
+            };
+
+            const result = $exeDevice.getModelViewerLibUrl();
+
+            expect(result).toBe(`https://example.com/${expectedLibPath}`);
+        });
     });
 
     describe('isSTLFile', () => {
@@ -280,11 +395,11 @@ describe('three-d-viewer iDevice (edition)', () => {
         });
 
         it('returns true for asset:// URLs with .glb', () => {
-            expect($exeDevice.isSupportedModelFile('asset://uuid/model.glb')).toBe(true);
+            expect($exeDevice.isSupportedModelFile('asset://uuid.glb')).toBe(true);
         });
 
         it('returns true for asset:// URLs with .stl', () => {
-            expect($exeDevice.isSupportedModelFile('asset://uuid/model.stl')).toBe(true);
+            expect($exeDevice.isSupportedModelFile('asset://uuid.stl')).toBe(true);
         });
 
         it('returns true for blob: URLs', () => {

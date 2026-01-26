@@ -315,7 +315,7 @@
             }
 
             // In export context (offline HTML), resolve to content/resources path
-            // asset://uuid/filename.glb -> content/resources/uuid/filename.glb
+            // asset://uuid.glb -> content/resources/uuid.glb
             const assetPath = clean.substring('asset://'.length);
             if (assetPath) {
                 const onIndex = document.documentElement.id === 'exe-index';

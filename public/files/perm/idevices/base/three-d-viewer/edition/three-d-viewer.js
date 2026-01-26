@@ -20,6 +20,19 @@ var $exeDevice = (function () {
         i18n: {
             name: _('3D Viewer'),
         },
+
+        /**
+         * Check if running in static mode (PWA/offline build).
+         * In static mode, paths should be relative to avoid basePath duplication.
+         * @returns {boolean}
+         */
+        isStaticMode: function () {
+            const config = window.eXeLearning?.config;
+            const parsedConfig = typeof config === 'string'
+                ? (function () { try { return JSON.parse(config); } catch (e) { return null; } })()
+                : config;
+            return !!(parsedConfig?.isStaticMode || parsedConfig?.isOfflineInstallation);
+        },
         ideviceBody: null,
         modelViewer: null,
         previewContainer: null,
@@ -792,7 +805,7 @@ var $exeDevice = (function () {
                             console.log('[3D Viewer] GLB file verified before storage, size:', glbArrayBuffer.byteLength);
                         }
 
-                        // Register as asset - this returns asset://uuid/filename.glb
+                        // Register as asset - this returns asset://uuid.glb
                         const glbAssetUrl = await assetManager.insertImage(glbFile);
                         console.log('[3D Viewer] Converted STL registered as GLB asset:', glbAssetUrl);
 
@@ -970,10 +983,10 @@ var $exeDevice = (function () {
             if (!path) return false;
             let filename = String(path).toLowerCase();
 
-            // Extract filename from asset:// URL (format: asset://uuid/filename.ext)
+            // Extract extension from asset:// URL (format: asset://uuid.ext)
             if (filename.startsWith('asset://')) {
-                const parts = filename.split('/');
-                filename = parts.length > 1 ? parts[parts.length - 1] : '';
+                // New format: asset://uuid.ext - just need the extension
+                filename = filename.substring('asset://'.length);
             }
             // For blob: URLs, we can't check extension - assume valid if we have blob URL
             // (the file was already validated when uploaded)
@@ -1200,6 +1213,14 @@ var $exeDevice = (function () {
          */
         getThreeJSBaseUrl: function () {
             const relativePath = 'files/perm/idevices/base/three-d-viewer/edition/';
+
+            // In static mode, use origin + path without basePath to avoid duplication
+            // Static deployments serve files from the deploy root, and basePath is already
+            // in the URL - adding it again causes path duplication like /pr-preview/pr-888/pr-preview/pr-888/...
+            if (this.isStaticMode()) {
+                return window.location.origin + '/' + relativePath;
+            }
+
             const symfony = window.eXeLearning?.symfony || {};
             const baseURL = String(symfony.baseURL || '').replace(/\/+$/g, '');
             const basePath = symfony.basePath ? `/${symfony.basePath.replace(/^\/+|\/+$/g, '')}` : '';
@@ -1267,6 +1288,11 @@ var $exeDevice = (function () {
 
         getModelViewerLibUrl: function () {
             const libPath = 'files/perm/idevices/base/three-d-viewer/export/model-viewer.min.js';
+            // In static mode, use relative path to avoid basePath duplication
+            // The browser resolves './files/...' relative to the current document, which is correct
+            if (this.isStaticMode()) {
+                return './' + libPath;
+            }
             return this.resolveAssetUrl(libPath);
         },
 
