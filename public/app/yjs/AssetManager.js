@@ -2152,8 +2152,12 @@ class AssetManager {
     let resolvedHTML = html;
     if (replacements.size > 0) {
       const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // IMPORTANT: Sort patterns from longest to shortest to avoid partial matches
+      // e.g., "asset://uuid/file.glb" must be replaced before "asset://uuid"
+      // otherwise "asset://uuid/file.glb" becomes "blob:xxx/file.glb" (broken)
+      const sortedKeys = Array.from(replacements.keys()).sort((a, b) => b.length - a.length);
       const pattern = new RegExp(
-        Array.from(replacements.keys()).map(escapeRegex).join('|'),
+        sortedKeys.map(escapeRegex).join('|'),
         'g'
       );
       resolvedHTML = resolvedHTML.replace(pattern, (match) => replacements.get(match) || match);

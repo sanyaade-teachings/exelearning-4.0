@@ -1,0 +1,342 @@
+/**
+ * Unit tests for three-d-viewer iDevice (edition)
+ *
+ * Tests the path resolution functions used for loading Three.js modules:
+ * - getThreeJSBaseUrl: Returns absolute URL for dynamic ES module imports
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+/**
+ * Helper to load iDevice file and expose $exeDevice globally.
+ * Replaces 'var $exeDevice' with 'global.$exeDevice' to make it accessible.
+ */
+function loadIdevice(code) {
+    // Replace 'var $exeDevice' with 'global.$exeDevice' anywhere in the code
+    const modifiedCode = code.replace(/var\s+\$exeDevice\s*=/, 'global.$exeDevice =');
+    // Execute the modified code using eval in global context
+    // eslint-disable-next-line no-eval
+    (0, eval)(modifiedCode);
+    return global.$exeDevice;
+}
+
+describe('three-d-viewer iDevice (edition)', () => {
+    let $exeDevice;
+    let originalWindow;
+
+    beforeEach(() => {
+        // Save original window state
+        originalWindow = {
+            eXeLearning: global.eXeLearning,
+            location: global.location,
+        };
+
+        // Reset $exeDevice before loading
+        global.$exeDevice = undefined;
+
+        // Mock window.location
+        global.location = {
+            origin: 'http://localhost:8080',
+            protocol: 'http:',
+            host: 'localhost:8080',
+            href: 'http://localhost:8080/workarea',
+        };
+
+        // Mock minimal eXeLearning structure
+        global.eXeLearning = {
+            symfony: {},
+            app: {
+                project: {},
+            },
+        };
+
+        // Mock minimal DOM elements
+        global.document = global.document || {
+            createElement: () => ({
+                setAttribute: () => {},
+                style: {},
+                addEventListener: () => {},
+            }),
+            head: { appendChild: () => {} },
+            querySelector: () => null,
+        };
+
+        // Mock _ function for translations
+        global._ = (s) => s;
+
+        // Read and execute the iDevice file
+        const filePath = join(__dirname, 'three-d-viewer.js');
+        const code = readFileSync(filePath, 'utf-8');
+
+        // Load iDevice and get reference
+        $exeDevice = loadIdevice(code);
+    });
+
+    afterEach(() => {
+        // Restore original window state
+        global.eXeLearning = originalWindow.eXeLearning;
+        global.location = originalWindow.location;
+    });
+
+    describe('i18n', () => {
+        it('is defined', () => {
+            expect($exeDevice.i18n).toBeDefined();
+        });
+
+        it('has name defined', () => {
+            expect($exeDevice.i18n.name).toBeDefined();
+        });
+    });
+
+    describe('getThreeJSBaseUrl', () => {
+        const expectedPath = 'files/perm/idevices/base/three-d-viewer/edition/';
+
+        it('returns absolute URL with protocol when baseURL is a full URL', () => {
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com',
+                basePath: '',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`https://example.com/${expectedPath}`);
+            expect(result).toMatch(/^https?:\/\//);
+        });
+
+        it('returns absolute URL with protocol when baseURL includes path', () => {
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com/app',
+                basePath: '',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`https://example.com/app/${expectedPath}`);
+            expect(result).toMatch(/^https?:\/\//);
+        });
+
+        it('prepends origin when baseURL is empty', () => {
+            global.eXeLearning.symfony = {
+                baseURL: '',
+                basePath: '',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`http://localhost:8080/${expectedPath}`);
+            expect(result).toMatch(/^https?:\/\//);
+        });
+
+        it('prepends origin when symfony config is undefined', () => {
+            global.eXeLearning.symfony = undefined;
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`http://localhost:8080/${expectedPath}`);
+            expect(result).toMatch(/^https?:\/\//);
+        });
+
+        it('includes basePath in URL', () => {
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com',
+                basePath: 'myapp',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`https://example.com/myapp/${expectedPath}`);
+        });
+
+        it('handles basePath with leading slash', () => {
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com',
+                basePath: '/myapp',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`https://example.com/myapp/${expectedPath}`);
+        });
+
+        it('handles basePath with trailing slash', () => {
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com',
+                basePath: 'myapp/',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`https://example.com/myapp/${expectedPath}`);
+        });
+
+        it('handles both baseURL and basePath together', () => {
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com',
+                basePath: 'school/elearning',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`https://example.com/school/elearning/${expectedPath}`);
+        });
+
+        it('strips trailing slashes from baseURL', () => {
+            global.eXeLearning.symfony = {
+                baseURL: 'https://example.com/',
+                basePath: '',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            // Should not have double slashes
+            expect(result).toBe(`https://example.com/${expectedPath}`);
+            expect(result).not.toContain('//files');
+        });
+
+        it('prepends origin for relative baseURL', () => {
+            global.eXeLearning.symfony = {
+                baseURL: '/app',
+                basePath: '',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`http://localhost:8080/app/${expectedPath}`);
+            expect(result).toMatch(/^https?:\/\//);
+        });
+
+        it('uses https origin when page is served over https', () => {
+            global.location.origin = 'https://secure.example.com';
+            global.eXeLearning.symfony = {
+                baseURL: '',
+                basePath: '',
+            };
+
+            const result = $exeDevice.getThreeJSBaseUrl();
+
+            expect(result).toBe(`https://secure.example.com/${expectedPath}`);
+            expect(result).toMatch(/^https:\/\//);
+        });
+
+        it('always returns URL starting with http:// or https://', () => {
+            // Test various edge cases
+            const testCases = [
+                { baseURL: '', basePath: '' },
+                { baseURL: '/', basePath: '' },
+                { baseURL: '/app', basePath: '' },
+                { baseURL: '', basePath: 'path' },
+                { baseURL: 'http://example.com', basePath: '' },
+                { baseURL: 'https://example.com', basePath: 'app' },
+            ];
+
+            for (const config of testCases) {
+                global.eXeLearning.symfony = config;
+                const result = $exeDevice.getThreeJSBaseUrl();
+                expect(result, `Failed for config: ${JSON.stringify(config)}`).toMatch(/^https?:\/\//);
+            }
+        });
+    });
+
+    describe('isSTLFile', () => {
+        it('returns true for .stl extension', () => {
+            expect($exeDevice.isSTLFile('model.stl')).toBe(true);
+        });
+
+        it('returns true for .STL extension (uppercase)', () => {
+            expect($exeDevice.isSTLFile('model.STL')).toBe(true);
+        });
+
+        it('returns true for path with .stl extension', () => {
+            expect($exeDevice.isSTLFile('path/to/model.stl')).toBe(true);
+        });
+
+        it('returns false for .glb extension', () => {
+            expect($exeDevice.isSTLFile('model.glb')).toBe(false);
+        });
+
+        it('returns false for empty string', () => {
+            expect($exeDevice.isSTLFile('')).toBe(false);
+        });
+
+        it('returns false for null/undefined', () => {
+            expect($exeDevice.isSTLFile(null)).toBe(false);
+            expect($exeDevice.isSTLFile(undefined)).toBe(false);
+        });
+    });
+
+    describe('isSupportedModelFile', () => {
+        it('returns true for .glb files', () => {
+            expect($exeDevice.isSupportedModelFile('model.glb')).toBe(true);
+        });
+
+        it('returns true for .stl files', () => {
+            expect($exeDevice.isSupportedModelFile('model.stl')).toBe(true);
+        });
+
+        it('returns true for asset:// URLs with .glb', () => {
+            expect($exeDevice.isSupportedModelFile('asset://uuid/model.glb')).toBe(true);
+        });
+
+        it('returns true for asset:// URLs with .stl', () => {
+            expect($exeDevice.isSupportedModelFile('asset://uuid/model.stl')).toBe(true);
+        });
+
+        it('returns true for blob: URLs', () => {
+            expect($exeDevice.isSupportedModelFile('blob:http://localhost/123')).toBe(true);
+        });
+
+        it('returns false for unsupported extensions', () => {
+            expect($exeDevice.isSupportedModelFile('model.obj')).toBe(false);
+            expect($exeDevice.isSupportedModelFile('model.fbx')).toBe(false);
+        });
+
+        it('returns false for empty string', () => {
+            expect($exeDevice.isSupportedModelFile('')).toBe(false);
+        });
+
+        it('returns false for null/undefined', () => {
+            expect($exeDevice.isSupportedModelFile(null)).toBe(false);
+            expect($exeDevice.isSupportedModelFile(undefined)).toBe(false);
+        });
+    });
+
+    describe('resolveModelPath', () => {
+        it('returns asset:// URLs unchanged', () => {
+            const assetUrl = 'asset://uuid-123/model.glb';
+            expect($exeDevice.resolveModelPath(assetUrl)).toBe(assetUrl);
+        });
+
+        it('returns blob: URLs unchanged', () => {
+            const blobUrl = 'blob:http://localhost/123';
+            expect($exeDevice.resolveModelPath(blobUrl)).toBe(blobUrl);
+        });
+
+        it('returns http/https URLs unchanged', () => {
+            expect($exeDevice.resolveModelPath('https://example.com/model.glb'))
+                .toBe('https://example.com/model.glb');
+        });
+
+        it('returns empty string for empty input', () => {
+            expect($exeDevice.resolveModelPath('')).toBe('');
+        });
+
+        it('returns empty string for null/undefined', () => {
+            expect($exeDevice.resolveModelPath(null)).toBe('');
+            expect($exeDevice.resolveModelPath(undefined)).toBe('');
+        });
+
+        it('prefixes file_manager/ for unknown paths', () => {
+            expect($exeDevice.resolveModelPath('uploads/model.glb')).toBe('file_manager/uploads/model.glb');
+        });
+
+        it('preserves files/ prefix', () => {
+            expect($exeDevice.resolveModelPath('files/temp/model.glb')).toBe('files/temp/model.glb');
+        });
+    });
+});
