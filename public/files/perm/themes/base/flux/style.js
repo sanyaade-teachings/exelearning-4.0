@@ -63,19 +63,6 @@ var myTheme = {
                 $('#exe-client-search-text').focus();
             }
         });
-        if (!this.inIframe()) {
-            // Fixed navigation
-            $('#siteNav').wrap('<div id="sidebar-nav"></div>');
-            myTheme.checkNav();
-            $(window).bind('resize', function () {
-                myTheme.checkNav();
-            });
-        }
-        // Search form
-        this.searchForm();
-
-        // mover .page-title dentro de .page-content
-        this.movePageTitle();
     },
     inIframe: function () {
         try {
@@ -84,18 +71,8 @@ var myTheme = {
             return true;
         }
     },
-    searchForm: function () {
-        $('#exe-client-search-text').attr('class', 'form-control');
-    },
     isLowRes: function () {
         return $('#siteNav').css('float') == 'none';
-    },
-    checkNav: function () {
-        var wrapper = $('#sidebar-nav');
-        var navH = $('#siteNav > ul').height(); // Menu height
-        navH = navH + 50;
-        if (navH < $(window).height()) wrapper.addClass('fixed');
-        else wrapper.removeClass('fixed');
     },
     param: function (e, act) {
         if (act == 'add') {
@@ -118,38 +95,7 @@ var myTheme = {
         $('.nav-buttons a').each(function () {
             myTheme.param(this, act);
         });
-    },
-
-    // function that move the h2 outside the header
-    movePageTitle: function () {
-        const tryMove = () => {
-            const $header = $('.main-header .page-header');
-            const $title = $header.find('.page-title').first();
-
-            // Search container of content
-            let $content = $('.page-content').first();
-            if (!$content.length)
-                $content = $('.content, main .content').first();
-            if (!$content.length) $content = $('#main, #content').first();
-            if (!$content.length && $header.length)
-                $content = $header.nextAll(':not(header)').first();
-            if (!$content.length && $header.length) $content = $header.parent();
-
-            if ($header.length && $title.length && $content.length) {
-                $content.prepend($title); // move it to the start
-                return true;
-            }
-            return false;
-        };
-
-        if (tryMove()) return;
-
-        const observer = new MutationObserver(() => {
-            if (tryMove()) observer.disconnect();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-    },
-    // 🔼
+    }
 };
 
 $(function () {
