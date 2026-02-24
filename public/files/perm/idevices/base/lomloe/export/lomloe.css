@@ -1,0 +1,98 @@
+/* LOMLOE iDevice — Export Styles */
+
+.lomloeIdeviceContent {
+    font-family: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+}
+
+.lomloeIdeviceContent h3.lomloe-export-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0 0 0.5em 0;
+    color: #1565c0;
+}
+
+.lomloeIdeviceContent .lomloe-export-meta {
+    font-size: 0.85em;
+    color: #555;
+    margin-bottom: 1em;
+}
+
+.lomloe-export-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+    margin-top: 0.5em;
+}
+
+.lomloe-export-table th,
+.lomloe-export-table td {
+    border: 1px solid #ccc;
+    padding: 0.4em 0.6em;
+    text-align: left;
+    vertical-align: top;
+}
+
+.lomloe-export-table th {
+    background-color: #1565c0;
+    color: white;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.lomloe-export-table tr:nth-child(even) {
+    background-color: #f5f9ff;
+}
+
+.lomloe-export-table tr:hover {
+    background-color: #e3f2fd;
+}
+
+.lomloe-type-badge {
+    display: inline-block;
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    font-size: 0.8em;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.lomloe-type-saber {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.lomloe-type-criterio {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.lomloe-cc-badge {
+    display: inline-block;
+    padding: 0.1em 0.3em;
+    margin: 0.1em;
+    border-radius: 3px;
+    font-size: 0.75em;
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+}
+
+.lomloe-coverage-badge {
+    display: inline-block;
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    font-size: 0.8em;
+}
+
+.lomloe-coverage-introduced { background-color: #e8f5e9; color: #2e7d32; }
+.lomloe-coverage-practiced  { background-color: #fff8e1; color: #f57f17; }
+.lomloe-coverage-assessed   { background-color: #fce4ec; color: #b71c1c; }
+
+.lomloe-export-empty {
+    padding: 1em;
+    color: #777;
+    font-style: italic;
+}
