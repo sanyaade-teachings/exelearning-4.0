@@ -23,8 +23,8 @@
     gap: 0.75rem;
     align-items: center;
     padding: 0.75rem 1rem;
-    background: #e3f2fd;
-    border: 1px solid #90caf9;
+    background: var(--brand-primary-50, #e3f8f9);
+    border: 1px solid var(--brand-primary-200, #99F6EB);
     border-radius: 6px;
     margin-bottom: 0.75rem;
 }
@@ -35,13 +35,13 @@
     gap: 0.4rem;
     font-weight: 600;
     font-size: 0.88em;
-    color: #1565c0;
+    color: var(--brand-primary-dark, #107275);
     white-space: nowrap;
 }
 
 .lomloe-header select {
     padding: 0.3em 0.6em;
-    border: 1px solid #90caf9;
+    border: 1px solid var(--brand-primary-200, #99F6EB);
     border-radius: 4px;
     background: white;
     font-size: 0.9em;
@@ -81,7 +81,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 0.75rem;
-    background: #1565c0;
+    background: var(--brand-primary, #0BA1A1);
     color: white;
     font-weight: 600;
     font-size: 0.88em;
@@ -136,10 +136,10 @@
 
 .lomloe-etapa-btn {
     padding: 0.3em 0.75em;
-    border: 1px solid #90caf9;
+    border: 1px solid var(--brand-primary-200, #99F6EB);
     border-radius: 20px;
     background: white;
-    color: #1565c0;
+    color: var(--brand-primary-dark, #107275);
     font-size: 0.82em;
     font-weight: 600;
     cursor: pointer;
@@ -148,13 +148,13 @@
 }
 
 .lomloe-etapa-btn:hover {
-    background: #e3f2fd;
+    background: var(--brand-primary-50, #e3f8f9);
 }
 
 .lomloe-etapa-btn.active {
-    background: #1565c0;
+    background: var(--brand-primary, #0BA1A1);
     color: white;
-    border-color: #1565c0;
+    border-color: var(--brand-primary, #0BA1A1);
 }
 
 /* Nivel selector */
@@ -180,14 +180,14 @@
 }
 
 .lomloe-nivel-btn:hover {
-    background: #e3f2fd;
-    border-color: #90caf9;
+    background: var(--brand-primary-50, #e3f8f9);
+    border-color: var(--brand-primary-200, #99F6EB);
 }
 
 .lomloe-nivel-btn.active {
-    background: #1976d2;
+    background: var(--brand-primary, #0BA1A1);
     color: white;
-    border-color: #1976d2;
+    border-color: var(--brand-primary, #0BA1A1);
 }
 
 /* Materia + content area */
@@ -224,8 +224,8 @@
 }
 
 .lomloe-materia-search:focus {
-    border-bottom-color: #1565c0;
-    background: #f0f7ff;
+    border-bottom-color: var(--brand-primary, #0BA1A1);
+    background: var(--brand-primary-50, #e3f8f9);
 }
 
 .lomloe-materia-list {
@@ -250,18 +250,18 @@
 }
 
 .lomloe-materia-item:hover {
-    background: #e3f2fd;
+    background: var(--brand-primary-50, #e3f8f9);
 }
 
 .lomloe-materia-item.active {
-    background: #bbdefb;
+    background: var(--brand-primary-100, #CCFBF7);
     font-weight: 600;
-    color: #0d47a1;
+    color: var(--brand-primary-dark, #107275);
 }
 
 .lomloe-materia-item .lomloe-sel-count {
     margin-left: auto;
-    background: #1565c0;
+    background: var(--brand-primary, #0BA1A1);
     color: white;
     border-radius: 10px;
     padding: 0.05em 0.45em;
@@ -281,7 +281,7 @@
 
 .lomloe-tabs {
     display: flex;
-    border-bottom: 2px solid #1565c0;
+    border-bottom: 2px solid var(--brand-primary, #0BA1A1);
     background: white;
 }
 
@@ -300,12 +300,12 @@
 }
 
 .lomloe-tab-btn:hover {
-    color: #1565c0;
+    color: var(--brand-primary, #0BA1A1);
 }
 
 .lomloe-tab-btn.active {
-    color: #1565c0;
-    border-bottom-color: #1565c0;
+    color: var(--brand-primary, #0BA1A1);
+    border-bottom-color: var(--brand-primary, #0BA1A1);
 }
 
 .lomloe-tab-content {
@@ -339,10 +339,10 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.4rem 0.6rem;
-    background: #e3f2fd;
+    background: var(--brand-primary-50, #e3f8f9);
     font-size: 0.83em;
     font-weight: 700;
-    color: #0d47a1;
+    color: var(--brand-primary-dark, #107275);
     cursor: pointer;
     user-select: none;
 }
@@ -381,13 +381,13 @@
 }
 
 .lomloe-saber-item:hover {
-    background: #f5f9ff;
+    background: var(--brand-primary-50, #e3f8f9);
 }
 
 .lomloe-saber-item input[type="checkbox"] {
     margin-top: 0.2em;
     flex-shrink: 0;
-    accent-color: #1565c0;
+    accent-color: var(--brand-primary, #0BA1A1);
     cursor: pointer;
 }
 
@@ -399,8 +399,8 @@
 .lomloe-saber-code {
     font-family: monospace;
     font-size: 0.78em;
-    color: #1565c0;
-    background: #e3f2fd;
+    color: var(--brand-primary-dark, #107275);
+    background: var(--brand-primary-50, #e3f8f9);
     padding: 0.1em 0.3em;
     border-radius: 3px;
     display: inline-block;
@@ -529,9 +529,9 @@
     font-size: 0.72em;
     padding: 0.05em 0.3em;
     border-radius: 3px;
-    background: #e3f2fd;
-    color: #1565c0;
-    border: 1px solid #bbdefb;
+    background: var(--brand-primary-50, #e3f8f9);
+    color: var(--brand-primary-dark, #107275);
+    border: 1px solid var(--brand-primary-100, #CCFBF7);
 }
 
 /* ── Selected panel — right ─────────────────────────────────── */
@@ -543,7 +543,7 @@
 
 .lomloe-selected-header {
     padding: 0.5rem 0.75rem;
-    background: #1565c0;
+    background: var(--brand-primary, #0BA1A1);
     color: white;
     font-weight: 600;
     font-size: 0.88em;
@@ -554,7 +554,7 @@
 
 .lomloe-selected-count {
     background: white;
-    color: #1565c0;
+    color: var(--brand-primary, #0BA1A1);
     border-radius: 12px;
     padding: 0.1em 0.5em;
     font-size: 0.85em;
@@ -612,7 +612,7 @@
 .lomloe-sel-code {
     font-family: monospace;
     font-size: 0.85em;
-    color: #1565c0;
+    color: var(--brand-primary-dark, #107275);
     display: block;
 }
 
@@ -660,7 +660,7 @@
 .lomloe-sel-meta select:focus,
 .lomloe-sel-meta input:focus {
     outline: none;
-    border-color: #1565c0;
+    border-color: var(--brand-primary, #0BA1A1);
 }
 
 /* ── Action buttons ─────────────────────────────────────────── */
@@ -685,13 +685,14 @@
 }
 
 .lomloe-btn-primary {
-    background: #1565c0;
+    background: var(--brand-primary, #0BA1A1);
     color: white;
-    border-color: #1565c0;
+    border-color: var(--brand-primary, #0BA1A1);
 }
 
 .lomloe-btn-primary:hover {
-    background: #0d47a1;
+    background: var(--brand-primary-dark, #107275);
+    border-color: var(--brand-primary-dark, #107275);
 }
 
 .lomloe-btn-secondary {
@@ -742,7 +743,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem 1rem;
-    background: #1565c0;
+    background: var(--brand-primary, #0BA1A1);
     color: white;
 }
 

@@ -24,6 +24,61 @@ var $Lomloe = {
         assessed: 'lomloe-coverage-assessed'
     },
 
+    /** Display names for each competencia clave code (used as tooltip title). */
+    CC_DESCRIPTIONS: {
+        'CCL':    'Competencia en comunicación lingüística',
+        'CCL1':   'CCL1 — Expresa e interpreta conceptos, pensamientos, hechos y opiniones de forma oral, escrita o signada',
+        'CCL2':   'CCL2 — Comprende e interpreta con sentido crítico textos orales, escritos o multimodales',
+        'CCL3':   'CCL3 — Localiza, selecciona y contrasta información de distintas fuentes evaluando su fiabilidad',
+        'CCL4':   'CCL4 — Lee con fluidez y comprende textos de distinta naturaleza y complejidad',
+        'CCL5':   'CCL5 — Produce textos con corrección lingüística, adecuación y coherencia',
+        'CP':     'Competencia plurilingüe',
+        'CP1':    'CP1 — Usa al menos una lengua adicional de forma eficiente en situaciones cotidianas',
+        'CP2':    'CP2 — Media en situaciones cotidianas que requieren comunicarse en distintas lenguas',
+        'CP3':    'CP3 — Conoce y respeta la diversidad lingüística y cultural como valor de las sociedades',
+        'STEM':   'Competencia matemática y en ciencia, tecnología e ingeniería',
+        'STEM1':  'STEM1 — Utiliza conceptos y razonamientos matemáticos para interpretar y producir información',
+        'STEM2':  'STEM2 — Aplica métodos del razonamiento científico para analizar situaciones y resolver problemas',
+        'STEM3':  'STEM3 — Plantea proyectos de diseño, creando prototipos o modelos para resolver problemas',
+        'STEM4':  'STEM4 — Interpreta y transmite elementos relevantes de investigaciones de forma clara y precisa',
+        'STEM5':  'STEM5 — Desarrolla proyectos de diseño de forma creativa, evaluando su sostenibilidad e impacto',
+        'CD':     'Competencia digital',
+        'CD1':    'CD1 — Realiza búsquedas en internet y contrasta información de forma crítica',
+        'CD2':    'CD2 — Crea, integra y reelabora contenidos digitales respetando los derechos de autoría',
+        'CD3':    'CD3 — Protege dispositivos, datos personales y privacidad en entornos digitales',
+        'CD4':    'CD4 — Conoce los riesgos en entornos digitales y adopta medidas de seguridad',
+        'CD5':    'CD5 — Desarrolla soluciones tecnológicas innovadoras para dar respuesta a necesidades',
+        'CPSAA':    'Competencia personal, social y de aprender a aprender',
+        'CPSAA1':   'CPSAA1 — Regula las emociones afrontando los retos y cambios con optimismo y resiliencia',
+        'CPSAA1.1': 'CPSAA1.1 — Fortalece el optimismo, la resiliencia, la autoeficacia y la búsqueda de objetivos',
+        'CPSAA1.2': 'CPSAA1.2 — Desarrolla una adecuada autoestima valorando las fortalezas y aceptando los límites',
+        'CPSAA2':   'CPSAA2 — Comprende la perspectiva de otros y se relaciona con empatía y asertividad',
+        'CPSAA3':   'CPSAA3 — Muestra proactividad y autonomía en la gestión del aprendizaje',
+        'CPSAA3.1': 'CPSAA3.1 — Evalúa y reflexiona sobre sus procesos de aprendizaje para mejorarlos',
+        'CPSAA3.2': 'CPSAA3.2 — Desarrolla autodirección y control del proceso de aprendizaje individual',
+        'CPSAA4':   'CPSAA4 — Desarrolla habilidades de colaboración participando activa y responsablemente',
+        'CPSAA5':   'CPSAA5 — Planifica objetivos a largo plazo evaluando progresos y ajustando estrategias',
+        'CC':    'Competencia ciudadana',
+        'CC1':   'CC1 — Interpreta y comprende la realidad histórica, social y política del mundo',
+        'CC2':   'CC2 — Comprende y analiza problemas éticos fundamentales y de actualidad',
+        'CC3':   'CC3 — Aplica estrategias de análisis sistemático y crítico de la información',
+        'CC4':   'CC4 — Comprende las diferentes realidades de un mundo global e interdependiente',
+        'CE':    'Competencia emprendedora',
+        'CE1':   'CE1 — Analiza necesidades y oportunidades afrontando retos con sentido crítico y ético',
+        'CE2':   'CE2 — Evalúa las fortalezas y debilidades propias con vistas al emprendimiento',
+        'CE3':   'CE3 — Desarrolla un proyecto emprendedor individual o colectivo buscando cooperación',
+        'CE7':   'CE7 — Desarrolla ideas innovadoras y creativas con valor para la sociedad',
+        'CCEC':    'Competencia en conciencia y expresión culturales',
+        'CCEC1':   'CCEC1 — Conoce, aprecia críticamente y respeta el patrimonio cultural y artístico',
+        'CCEC2':   'CCEC2 — Disfruta, respeta y valora críticamente las manifestaciones culturales y artísticas',
+        'CCEC3':   'CCEC3 — Expresa ideas, sentimientos y emociones por medio de producciones culturales y artísticas',
+        'CCEC3.1': 'CCEC3.1 — Desarrolla la creatividad y el sentido estético para enriquecer la comunicación',
+        'CCEC3.2': 'CCEC3.2 — Respeta e interpreta el patrimonio cultural y artístico en su contexto sociohistórico',
+        'CCEC4':   'CCEC4 — Define e implementa acciones de responsabilidad cultural y artística',
+        'CCEC4.1': 'CCEC4.1 — Conoce y aplica los derechos de autoría y respeta la propiedad intelectual',
+        'CCEC4.2': 'CCEC4.2 — Participa de forma comprometida y creativa en proyectos culturales y artísticos'
+    },
+
     /** ISO 3166-2:ES code → human-readable label */
     DATASET_LABELS: {
         'ES':    'Estado (España)',
@@ -98,7 +153,7 @@ var $Lomloe = {
     _buildTable: function (selections) {
         if (!selections.length) return '';
 
-        var html = '<table class="lomloe-export-table">';
+        var html = '<table class="lomloe-export-table exe-table">';
         html += '<thead><tr>';
         html += '<th>Tipo</th>';
         html += '<th>Etapa</th>';
@@ -136,7 +191,8 @@ var $Lomloe = {
                 html += '<td>' + self._esc(sel.descripcionCriterio || '') + '</td>';
                 html += '<td>';
                 (sel.competenciasClave || []).forEach(function (cc) {
-                    html += '<span class="lomloe-cc-badge">' + self._esc(cc) + '</span>';
+                    var title = self.CC_DESCRIPTIONS[cc] || cc;
+                    html += '<span class="lomloe-cc-badge" title="' + self._esc(title) + '">' + self._esc(cc) + '</span>';
                 });
                 html += '</td>';
             }
