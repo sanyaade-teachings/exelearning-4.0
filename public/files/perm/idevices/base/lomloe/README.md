@@ -1,4 +1,4 @@
-# LOMLOE: Concreción Curricular — iDevice
+# LOMLOE: Fundamentación Curricular — iDevice
 
 An eXeLearning iDevice that lets educators tag an educational resource (REA) with Spanish LOMLOE curriculum elements: *saberes básicos* and *competencias específicas / criterios de evaluación*.
 

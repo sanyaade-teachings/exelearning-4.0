@@ -454,7 +454,7 @@ var $exeDevice = (function () {
             '<div class="lomloe-modal-overlay" id="lomloe-modal-' + uid + '" hidden role="dialog" aria-modal="true">',
             '  <div class="lomloe-modal-box">',
             '    <div class="lomloe-modal-top">',
-            '      <h2>' + _('Resumen de la concreción curricular') + '</h2>',
+            '      <h2>' + _('Resumen de la fundamentación curricular') + '</h2>',
             '      <button class="lomloe-modal-close" id="lomloe-modal-close-' + uid + '" aria-label="' + _('Cerrar') + '">✕</button>',
             '    </div>',
             '    <div class="lomloe-modal-body" id="lomloe-modal-body-' + uid + '"></div>',
@@ -1103,9 +1103,9 @@ var $exeDevice = (function () {
         };
 
         var html = '';
-        html += '<h3 class="lomloe-export-title">' + _('Concreción Curricular LOMLOE') + '</h3>';
+        html += '<h3 class="lomloe-export-title">' + _('Fundamentación Curricular LOMLOE') + '</h3>';
         html += '<p class="lomloe-export-meta">';
-        html += _('Concreción') + ': <strong>' + esc(datasetLabel) + '</strong>';
+        html += _('Fundamentación') + ': <strong>' + esc(datasetLabel) + '</strong>';
         html += ' &nbsp;|&nbsp; ' + _('Elementos seleccionados') + ': <strong>' + sels.length + '</strong>';
         html += '</p>';
 

@@ -136,9 +136,9 @@ var $Lomloe = {
         var criterios = selections.filter(function (s) { return s.type === 'criterio'; });
 
         var html = '';
-        html += '<h3 class="lomloe-export-title">Concreción Curricular LOMLOE</h3>';
+        html += '<h3 class="lomloe-export-title">Fundamentación Curricular LOMLOE</h3>';
         html += '<p class="lomloe-export-meta">';
-        html += 'Concreción: <strong>' + this._esc(datasetLabel) + '</strong>';
+        html += 'Fundamentación: <strong>' + this._esc(datasetLabel) + '</strong>';
         html += ' &nbsp;|&nbsp; Elementos seleccionados: <strong>' + selections.length + '</strong>';
         if (sabers.length) html += ' &nbsp;(' + sabers.length + ' saberes básicos';
         if (criterios.length) html += ', ' + criterios.length + ' criterios de evaluación)';
