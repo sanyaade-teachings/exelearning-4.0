@@ -1068,7 +1068,7 @@ var $exeDevice = (function () {
             '      <select class="lomloe-coverage-sel" data-selid="' + esc(sel.id) + '">' + coverageOptions + '</select>',
             '    </label>',
             '    <label>',
-            '      ' + _('Notas:'),
+            '      ' + _('Observaciones:'),
             '      <input type="text" class="lomloe-notes-input" data-selid="' + esc(sel.id) + '" placeholder="…">',
             '    </label>',
             '  </div>',
@@ -1119,7 +1119,7 @@ var $exeDevice = (function () {
         html += '<th>' + _('Descripción') + '</th>';
         html += '<th>' + _('Comp. Clave') + '</th>';
         html += '<th>' + _('Cobertura') + '</th>';
-        html += '<th>' + _('Notas') + '</th>';
+        html += '<th>' + _('Observaciones') + '</th>';
         html += '</tr></thead><tbody>';
 
         sels.forEach(function (sel) {

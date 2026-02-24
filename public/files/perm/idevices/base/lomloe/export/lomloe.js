@@ -163,7 +163,7 @@ var $Lomloe = {
         html += '<th>Descripción</th>';
         html += '<th>Comp. Clave</th>';
         html += '<th>Cobertura</th>';
-        html += '<th>Notas</th>';
+        html += '<th>Observaciones</th>';
         html += '</tr></thead><tbody>';
 
         var self = this;
