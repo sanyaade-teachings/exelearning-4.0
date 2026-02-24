@@ -556,6 +556,7 @@ var $exeDevice = (function () {
         selectedEtapa = etapa;
         selectedNivel = null;
         selectedMateria = null;
+        renderEtapaBar();
         renderNivelBar();
         renderMateriaList();
         clearContent();
@@ -564,6 +565,7 @@ var $exeDevice = (function () {
     function onNivelClick(nivel) {
         selectedNivel = nivel;
         selectedMateria = null;
+        renderNivelBar();
         renderMateriaList();
         clearContent();
     }
