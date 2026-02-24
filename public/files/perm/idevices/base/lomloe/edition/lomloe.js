@@ -115,31 +115,47 @@ var $exeDevice = (function () {
      * iDevice edition script URL, handling eXeLearning API, HTTP and file:// cases.
      */
     function resolveEditionResource(relativePath) {
-        // 1. eXeLearning resource API
-        if (window.eXeLearning &&
-            typeof window.eXeLearning.getIdeviceResourcePath === 'function') {
-            return window.eXeLearning.getIdeviceResourcePath('lomloe', relativePath);
+        // 1. Use eXe.app infrastructure (most reliable: handles BASE_PATH and API paths)
+        if (typeof eXe !== 'undefined' && eXe.app &&
+            typeof eXe.app.getIdeviceInstalled === 'function') {
+            var idevice = eXe.app.getIdeviceInstalled('lomloe');
+            if (idevice && typeof idevice.getResourceServicePath === 'function') {
+                var basePath = idevice.pathEdition || idevice.path || '';
+                if (basePath) {
+                    var resolved = resolveRelativePath(basePath, relativePath);
+                    return idevice.getResourceServicePath(resolved);
+                }
+            }
         }
-        // 2. Resolve from current script element src attribute
-        var scripts = document.querySelectorAll('script[src*="lomloe"]');
-        if (scripts.length) {
-            var src = scripts[scripts.length - 1].src;
-            var base = src.substring(0, src.lastIndexOf('/') + 1);
-            return resolveRelativePath(base, relativePath);
+        // 2. Resolve from current script element src attribute (raw value, not DOM property)
+        var scripts = document.getElementsByTagName('script');
+        for (var i = 0; i < scripts.length; i++) {
+            var src = scripts[i].getAttribute('src') || '';
+            if (src.indexOf('lomloe.js') !== -1 && src.indexOf('/edition/') !== -1) {
+                var lastSlash = src.lastIndexOf('/');
+                if (lastSlash !== -1) {
+                    var base = src.substring(0, lastSlash + 1);
+                    try {
+                        var fullBase = new URL(base, window.location.href).href;
+                        return new URL(relativePath, fullBase).pathname;
+                    } catch (e) {
+                        return resolveRelativePath(base, relativePath);
+                    }
+                }
+            }
         }
         // 3. Resolve from window location
         return resolveRelativePath(window.location.href, relativePath);
     }
 
     function resolveRelativePath(base, relative) {
-        // Remove query/hash from base
-        var baseClean = base.split('?')[0].split('#')[0];
+        // Remove trailing slash and query/hash, then split into segments
+        var baseClean = base.replace(/\/$/, '').split('?')[0].split('#')[0];
         var baseParts = baseClean.split('/');
-        baseParts.pop();  // remove filename portion
         relative.split('/').forEach(function (part) {
             if (part === '..') {
                 baseParts.pop();
-            } else if (part !== '.') {
+            } else if (part !== '.' && part !== '') {
                 baseParts.push(part);
             }
         });
