@@ -58,6 +58,18 @@ describe('$slide._normalize — version 2', () => {
         expect(r._version).toBe(2);
         expect(r.svg).toBe(svg);
     });
+
+    it('passes through width when set in version 2 data', () => {
+        const data = { version: 2, store: {}, svg: '', width: 800 };
+        const r = _normalize(data);
+        expect(r.width).toBe(800);
+    });
+
+    it('returns null width when version 2 data has no width', () => {
+        const data = { version: 2, store: {}, svg: '' };
+        const r = _normalize(data);
+        expect(r.width).toBeNull();
+    });
 });
 
 describe('$slide.renderView — version 2', () => {
@@ -116,6 +128,25 @@ describe('$slide.renderView — version 2', () => {
         const data = { version: 2, store: {}, svg: '<svg/>' };
         const result = renderView(data, {}, '{content}');
         expect(result).not.toContain('slide-export-canvas');
+    });
+
+    it('applies inline max-width style when width is set', () => {
+        const data = { version: 2, store: {}, svg: '<svg/>', width: 800 };
+        const result = renderView(data, {}, '{content}');
+        expect(result).toContain('style="max-width:800px"');
+    });
+
+    it('does not add inline style when width is absent', () => {
+        const data = { version: 2, store: {}, svg: '<svg/>' };
+        const result = renderView(data, {}, '{content}');
+        expect(result).not.toContain('style="max-width:');
+    });
+
+    it('renders a fullscreen button for version 2 data', () => {
+        const data = { version: 2, store: {}, svg: '<svg/>' };
+        const result = renderView(data, {}, '{content}');
+        expect(result).toContain('slide-fullscreen-btn');
+        expect(result).toContain('aria-label="Fullscreen"');
     });
 });
 
@@ -530,9 +561,58 @@ describe('$slide.renderView — version 1 (Fabric legacy)', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('$slide.renderBehaviour', () => {
+    // Wire the delegation once for all tests in this suite.  Re-wiring on each
+    // test would accumulate click listeners (document is shared within the file)
+    // and cause interference between tests.
+    beforeAll(async () => {
+        delete document._slideExportWired;
+        await renderBehaviour();
+    });
+
     it('returns a Promise that resolves to undefined', async () => {
+        // The idempotent second call must still return a resolving Promise.
         const p = renderBehaviour();
         expect(p).toBeInstanceOf(Promise);
         await expect(p).resolves.toBeUndefined();
+    });
+
+    it('is idempotent: calling multiple times does not wire the delegation twice', async () => {
+        await renderBehaviour();
+        await renderBehaviour();
+        // Verified indirectly: activation test below would double-trigger if not idempotent
+    });
+
+    it('activates CSS simulation on click when Fullscreen API is unavailable', () => {
+        const wrap = document.createElement('div');
+        wrap.className = 'slide-export-tldraw';
+        const btn = document.createElement('button');
+        btn.className = 'slide-fullscreen-btn';
+        wrap.appendChild(btn);
+        document.body.appendChild(wrap);
+
+        btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        expect(wrap.classList.contains('slide-fs-active')).toBe(true);
+        expect(btn.getAttribute('aria-label')).toBe('Exit fullscreen');
+
+        document.body.removeChild(wrap);
+    });
+
+    it('deactivates CSS simulation when clicking while already active', () => {
+        // Start with the wrapper already in simulated-fullscreen state.
+        const wrap = document.createElement('div');
+        wrap.className = 'slide-export-tldraw slide-fs-active';
+        const btn = document.createElement('button');
+        btn.className = 'slide-fullscreen-btn';
+        btn.setAttribute('aria-label', 'Exit fullscreen');
+        wrap.appendChild(btn);
+        document.body.appendChild(wrap);
+
+        btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        expect(wrap.classList.contains('slide-fs-active')).toBe(false);
+        expect(btn.getAttribute('aria-label')).toBe('Fullscreen');
+
+        document.body.removeChild(wrap);
     });
 });

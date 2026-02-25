@@ -67,6 +67,11 @@ var $slide = (function () {
         return isFinite(n) ? Math.min(Math.max(n, min), max) : min;
     }
 
+    // ── Fullscreen button SVG icons ───────────────────────────────────────────
+
+    var ICON_ENTER_FS = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9"/></svg>';
+    var ICON_EXIT_FS  = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 1v4H1M9 5V1h4M9 13v-4h4M5 9v4H1"/></svg>';
+
     // ── Version detection ─────────────────────────────────────────────────────
 
     /**
@@ -92,6 +97,7 @@ var $slide = (function () {
     /**
      * Render version-2 tldraw data by embedding the cached SVG.
      * Makes the SVG responsive by replacing fixed width/height attributes.
+     * Applies an inline max-width when the data carries a configured width.
      *
      * @param {object} data     Parsed version-2 data object
      * @param {string} template HTML template with {content} placeholder
@@ -107,7 +113,9 @@ var $slide = (function () {
                 .replace(/(<svg[^>]*)\sheight="[^"]*"/, '$1');
         }
 
-        var html = '<div class="slide-export-tldraw">' + svg + '</div>';
+        var styleAttr = (data && data.width > 0) ? ' style="max-width:' + parseInt(data.width, 10) + 'px"' : '';
+        var btn = '<button type="button" class="slide-fullscreen-btn" aria-label="Fullscreen">' + ICON_ENTER_FS + '</button>';
+        var html = '<div class="slide-export-tldraw"' + styleAttr + '>' + btn + svg + '</div>';
         return (template || '{content}').replace('{content}', html);
     }
 
@@ -291,7 +299,8 @@ var $slide = (function () {
             var parsed = (typeof raw === 'string') ? JSON.parse(raw) : raw;
             return {
                 _version: 2,
-                svg:      (parsed && typeof parsed.svg === 'string') ? parsed.svg : '',
+                svg:   (parsed && typeof parsed.svg === 'string') ? parsed.svg : '',
+                width: (parsed && typeof parsed.width === 'number' && parsed.width > 0) ? parsed.width : null,
             };
         }
         var v1 = normalizeV1(raw);
@@ -331,11 +340,90 @@ var $slide = (function () {
         },
 
         /**
-         * Engine step 2 — attach runtime behaviour (none needed; pure HTML/SVG).
+         * Engine step 2 — wire fullscreen behaviour via document-level event
+         * delegation so it works regardless of call timing and in iframe contexts.
          *
          * @returns {Promise<void>}
          */
         renderBehaviour: function () {
+            // Guard: only wire once per document, even with multiple slide iDevices.
+            if (document._slideExportWired) { return Promise.resolve(); }
+            document._slideExportWired = true;
+
+            // ── Helpers ────────────────────────────────────────────────────────
+
+            function activateCssFs(wrap, btn) {
+                wrap.classList.add('slide-fs-active');
+                btn.setAttribute('aria-label', 'Exit fullscreen');
+                btn.innerHTML = ICON_EXIT_FS;
+                document.body.style.overflow = 'hidden';
+            }
+
+            function deactivateCssFs(wrap) {
+                wrap.classList.remove('slide-fs-active');
+                var btn = wrap.querySelector('.slide-fullscreen-btn');
+                if (btn) {
+                    btn.setAttribute('aria-label', 'Fullscreen');
+                    btn.innerHTML = ICON_ENTER_FS;
+                }
+                document.body.style.overflow = '';
+            }
+
+            // ── Click delegation ───────────────────────────────────────────────
+            // Handles clicks on any .slide-fullscreen-btn, even those added to the
+            // DOM after renderBehaviour() was called.
+
+            document.addEventListener('click', function (e) {
+                var btn = e.target && e.target.closest
+                    ? e.target.closest('.slide-fullscreen-btn')
+                    : null;
+                if (!btn) return;
+                var wrap = btn.closest('.slide-export-tldraw');
+                if (!wrap) return;
+
+                var isNativeFs = !!document.fullscreenElement;
+                var isCssFs    = wrap.classList.contains('slide-fs-active');
+
+                if (isNativeFs) {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                } else if (isCssFs) {
+                    deactivateCssFs(wrap);
+                } else {
+                    // Try native Fullscreen API; fall back to CSS simulation.
+                    if (wrap.requestFullscreen) {
+                        try {
+                            var p = wrap.requestFullscreen();
+                            if (p && p.catch) {
+                                p.catch(function () { activateCssFs(wrap, btn); });
+                            }
+                        } catch (_e) {
+                            activateCssFs(wrap, btn);
+                        }
+                    } else {
+                        activateCssFs(wrap, btn);
+                    }
+                }
+            });
+
+            // ── ESC key — close CSS simulation ────────────────────────────────
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                document.querySelectorAll('.slide-export-tldraw.slide-fs-active').forEach(deactivateCssFs);
+            });
+
+            // ── Native fullscreenchange — sync icon ────────────────────────────
+            document.addEventListener('fullscreenchange', function () {
+                document.querySelectorAll('.slide-export-tldraw .slide-fullscreen-btn').forEach(function (btn) {
+                    var wrap  = btn.closest('.slide-export-tldraw');
+                    var isFs  = !!document.fullscreenElement && wrap === document.fullscreenElement;
+                    btn.setAttribute('aria-label', isFs ? 'Exit fullscreen' : 'Fullscreen');
+                    btn.innerHTML = isFs ? ICON_EXIT_FS : ICON_ENTER_FS;
+                    // Clear CSS simulation if native fullscreen has taken over
+                    if (wrap) wrap.classList.remove('slide-fs-active');
+                    document.body.style.overflow = '';
+                });
+            });
+
             return Promise.resolve();
         },
 

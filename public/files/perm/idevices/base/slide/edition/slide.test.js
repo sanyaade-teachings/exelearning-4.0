@@ -113,7 +113,10 @@ describe('loadBundle', () => {
         $exeDevice.init(container, null, '/bad/path/');
         await new Promise(r => setTimeout(r, 50));
 
-        const errEl = container._children.find(c => c.className === 'slide-error');
+        // Error element is inside the host div, not directly in container
+        const host = container._children.find(c => c.className === 'slide-editor-tldraw-host');
+        expect(host).toBeDefined();
+        const errEl = host.querySelector('.slide-error');
         expect(errEl).toBeDefined();
         expect(errEl.textContent).toContain('Could not load');
     });
@@ -169,6 +172,20 @@ describe('after init (with __slideEditorInit already loaded)', () => {
         expect(data.svg).toBeDefined();
     });
 
+    it('save includes width and height with defaults when previousData is null', async () => {
+        await initEditor(null);
+        const data = $exeDevice.save();
+        expect(data.width).toBe(960);
+        expect(data.height).toBe(600);
+    });
+
+    it('save restores width and height from previousData', async () => {
+        await initEditor({ version: 2, store: {}, svg: '', width: 800, height: 450 });
+        const data = $exeDevice.save();
+        expect(data.width).toBe(800);
+        expect(data.height).toBe(450);
+    });
+
     it('save includes ideviceId from container attribute', async () => {
         await initEditor(null);
         expect($exeDevice.save().ideviceId).toBe('test-idevice-id');
@@ -197,10 +214,11 @@ describe('after init (with __slideEditorInit already loaded)', () => {
     });
 
     it('removes loading indicator before mounting editor', async () => {
-        // Loading element is appended, then removed on success
         await initEditor(null);
-        const loadingEl = container._children.find(c => c.className === 'slide-loading');
-        expect(loadingEl).toBeUndefined();
+        // Loading element is inside the host div, not a direct child of container
+        const host = container._children.find(c => c.className === 'slide-editor-tldraw-host');
+        expect(host).toBeDefined();
+        expect(host.querySelector('.slide-loading')).toBeNull();
     });
 });
 

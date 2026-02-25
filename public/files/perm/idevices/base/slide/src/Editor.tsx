@@ -8,9 +8,11 @@
 
 import React, {
     useCallback,
+    useEffect,
     useImperativeHandle,
     useMemo,
     useRef,
+    useState,
 } from 'react'
 import {
     AssetRecordType,
@@ -91,6 +93,59 @@ function makeExeAssetStore(): TLAssetStore {
             }
         },
     }
+}
+
+// ── Fullscreen button ─────────────────────────────────────────────────────────
+
+const EnterFsIcon: React.FC = () => (
+    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5"
+         strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" />
+    </svg>
+)
+
+const ExitFsIcon: React.FC = () => (
+    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5"
+         strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M5 1v4H1M9 5V1h4M9 13v-4h4M5 9v4H1" />
+    </svg>
+)
+
+/**
+ * Fullscreen toggle button rendered via InFrontOfTheCanvas.
+ * Finds the closest .slide-editor-tldraw-host ancestor and toggles fullscreen on it.
+ */
+function FullscreenButton() {
+    const btnRef = useRef<HTMLButtonElement>(null)
+    const [isFullscreen, setIsFullscreen] = useState(false)
+
+    useEffect(() => {
+        const onFsChange = () => setIsFullscreen(!!document.fullscreenElement)
+        document.addEventListener('fullscreenchange', onFsChange)
+        return () => document.removeEventListener('fullscreenchange', onFsChange)
+    }, [])
+
+    const toggle = useCallback(() => {
+        if (document.fullscreenElement) {
+            document.exitFullscreen()
+        } else {
+            const host = btnRef.current?.closest<HTMLElement>('.slide-editor-tldraw-host')
+            host?.requestFullscreen?.()
+        }
+    }, [])
+
+    return (
+        <button
+            ref={btnRef}
+            type="button"
+            className="slide-fullscreen-btn"
+            title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            onClick={toggle}
+        >
+            {isFullscreen ? <ExitFsIcon /> : <EnterFsIcon />}
+        </button>
+    )
 }
 
 // ── Component types ──────────────────────────────────────────────────────────
@@ -323,6 +378,30 @@ const Editor = React.forwardRef<EditorApi, EditorProps>(function Editor(
         (editor: TldrawEditor) => {
             editorRef.current = editor
 
+            // Fix: Bootstrap's [role=button] { cursor: pointer } overrides tldraw's
+            // SVG cursor presentation attribute on rotation/resize handles (SVG attrs
+            // have specificity 0,0,0; Bootstrap wins). On pointerover we promote the
+            // attribute to an inline style (specificity 1,0,0,0) so it always wins.
+            const HANDLE_CLASSES = ['tl-rotate-corner', 'tl-resize-handle']
+            const onHandlePointerOver = (e: PointerEvent) => {
+                const el = e.target as Element | null
+                if (!el?.classList) return
+                if (HANDLE_CLASSES.some((c) => el.classList.contains(c))) {
+                    const cur = el.getAttribute('cursor')
+                    if (cur) (el as HTMLElement).style.cursor = cur
+                }
+            }
+            const onHandlePointerOut = (e: PointerEvent) => {
+                const el = e.target as Element | null
+                if (!el?.classList) return
+                if (HANDLE_CLASSES.some((c) => el.classList.contains(c))) {
+                    ;(el as HTMLElement).style.cursor = ''
+                }
+            }
+            const container = editor.getContainer()
+            container.addEventListener('pointerover', onHandlePointerOver)
+            container.addEventListener('pointerout', onHandlePointerOut)
+
             // SVG cache (debounced 500 ms)
             const unlistenSvg = editor.store.listen(
                 () => {
@@ -362,6 +441,8 @@ const Editor = React.forwardRef<EditorApi, EditorProps>(function Editor(
                 editorRef.current = null
                 unlistenSvg()
                 if (svgTimerRef.current) clearTimeout(svgTimerRef.current)
+                container.removeEventListener('pointerover', onHandlePointerOver)
+                container.removeEventListener('pointerout', onHandlePointerOut)
             }
         },
         [store],
@@ -378,6 +459,7 @@ const Editor = React.forwardRef<EditorApi, EditorProps>(function Editor(
             components={{
                 PageMenu: null,
                 DebugPanel: isDebug ? undefined : null,
+                InFrontOfTheCanvas: FullscreenButton,
             }}
             overrides={uiOverrides}
         />
