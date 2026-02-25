@@ -3,7 +3,7 @@
  *
  * The edition module is an IIFE that assigns window.$exeDevice.
  * We mock __slideEditorInit so no real React/tldraw bundle is needed.
- * Tests focus on: bundle loading, init/save API, yjsBridge wiring,
+ * Tests focus on: bundle loading, init/save API,
  * error-path behaviour, and the data contract.
  */
 
@@ -14,11 +14,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 function buildContainerMock() {
     const attrs = { 'idevice-id': 'test-idevice-id' };
     const children = [];
-
-    return {
+    const obj = {
         classList: { add: vi.fn() },
         getAttribute: (attr) => attrs[attr] || null,
-        innerHTML: '',
         _children: children,
         appendChild: vi.fn(function (child) { children.push(child); }),
         removeChild: vi.fn(function (child) {
@@ -27,6 +25,12 @@ function buildContainerMock() {
         }),
         contains: vi.fn(function (child) { return children.includes(child); }),
     };
+    // innerHTML = '' must clear tracked children, mirroring real DOM behaviour
+    Object.defineProperty(obj, 'innerHTML', {
+        set(v) { if (v === '') children.splice(0, children.length); },
+        get() { return ''; },
+    });
+    return obj;
 }
 
 function buildMockEditorApi() {
@@ -47,13 +51,6 @@ beforeEach(async () => {
     delete global.window.__slideEditorInit;
 
     global.window._ = (k) => k;
-    global.window.eXeLearning = {
-        app: {
-            project: {
-                _yjsBridge: { documentManager: {} },
-            },
-        },
-    };
 
     const code = await import('./slide.js?raw').then(m => m.default);
     // eslint-disable-next-line no-new-func
@@ -186,52 +183,16 @@ describe('after init (with __slideEditorInit already loaded)', () => {
         const previousData = { version: 2, store: {}, svg: '<svg/>' };
         await initEditor(previousData);
         expect(global.window.__slideEditorInit.mount).toHaveBeenCalledWith(
-            container,
+            expect.anything(),
             expect.objectContaining({ previousData }),
-        );
-    });
-
-    it('passes ideviceId to mount', async () => {
-        await initEditor(null);
-        expect(global.window.__slideEditorInit.mount).toHaveBeenCalledWith(
-            container,
-            expect.objectContaining({ ideviceId: 'test-idevice-id' }),
         );
     });
 
     it('passes bundlePath (the edition path) to mount', async () => {
         await initEditor(null);
         expect(global.window.__slideEditorInit.mount).toHaveBeenCalledWith(
-            container,
+            expect.anything(),
             expect.objectContaining({ bundlePath: '/path/' }),
-        );
-    });
-
-    it('passes yjsBridge from eXeLearning app to mount', async () => {
-        await initEditor(null);
-        expect(global.window.__slideEditorInit.mount).toHaveBeenCalledWith(
-            container,
-            expect.objectContaining({
-                yjsBridge: global.window.eXeLearning.app.project._yjsBridge,
-            }),
-        );
-    });
-
-    it('passes null yjsBridge when eXeLearning is unavailable', async () => {
-        delete global.window.eXeLearning;
-        await initEditor(null);
-        expect(global.window.__slideEditorInit.mount).toHaveBeenCalledWith(
-            container,
-            expect.objectContaining({ yjsBridge: null }),
-        );
-    });
-
-    it('passes null yjsBridge when project is missing', async () => {
-        global.window.eXeLearning = { app: {} };
-        await initEditor(null);
-        expect(global.window.__slideEditorInit.mount).toHaveBeenCalledWith(
-            container,
-            expect.objectContaining({ yjsBridge: null }),
         );
     });
 

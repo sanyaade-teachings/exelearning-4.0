@@ -27,10 +27,10 @@
         <filename>slide.css</filename>
     </export-css>
     <export-template-filename>slide.html</export-template-filename>
-    <author>eXeLearning</author>
+    <author>Área de Tecnología Educativa (ATE)</author>
     <author-url>https://exelearning.net</author-url>
     <license>CC-BY-SA 4.0</license>
     <license-url>https://creativecommons.org/licenses/by-sa/4.0/</license-url>
-    <description>Visual slide editor powered by tldraw. Supports real-time collaboration via Yjs. Exports to SVG for responsive rendering.</description>
+    <description>Visual slide editor powered by tldraw. Exports to SVG for responsive rendering.</description>
     <downloadable>0</downloadable>
 </idevice>

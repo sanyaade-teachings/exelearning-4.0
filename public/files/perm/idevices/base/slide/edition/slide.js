@@ -9,7 +9,7 @@
  * License: https://creativecommons.org/licenses/by-sa/4.0/
  */
 
-/* global _, eXeLearning */
+/* global _ */
 /* eslint-disable no-undef */
 
 (function () {
@@ -81,17 +81,8 @@
                     wrapper.style.cssText = 'width:100%;height:100%';
                     element.appendChild(wrapper);
 
-                    var yjsBridge = (
-                        window.eXeLearning &&
-                        window.eXeLearning.app &&
-                        window.eXeLearning.app.project &&
-                        window.eXeLearning.app.project._yjsBridge
-                    ) || null;
-
                     self._editorApi = window[BUNDLE_GLOBAL].mount(wrapper, {
                         previousData: previousData,
-                        ideviceId:   self._ideviceId,
-                        yjsBridge:   yjsBridge,
                         bundlePath:  path,
                     });
                 })
