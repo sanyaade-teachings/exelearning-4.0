@@ -1,0 +1,43 @@
+/**
+ * Slide iDevice — edition styles for tldraw container.
+ *
+ * tldraw requires an explicit height on its parent element.
+ * The host class is applied dynamically by slide.js on init.
+ */
+
+.slide-editor-tldraw-host {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    min-height: 400px;
+}
+
+.slide-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #64748b;
+    font-size: 0.95rem;
+    font-family: Inter, Arial, sans-serif;
+}
+
+.slide-error {
+    color: #dc2626;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    font-family: Inter, Arial, sans-serif;
+}
+
+/* Reset Bootstrap's kbd styles so tldraw's keyboard shortcut badges render correctly.
+ * Bootstrap sets kbd { background-color: var(--bs-body-color) } which makes the
+ * tldraw <kbd class="tlui-kbd"> element dark, while tldraw forces color: currentColor
+ * (inheriting the dark text colour) → invisible dark-on-dark text. */
+.tl-container kbd {
+    background-color: transparent;
+    color: currentColor;
+    padding: 0;
+    font-size: inherit;
+    border-radius: 0;
+}
