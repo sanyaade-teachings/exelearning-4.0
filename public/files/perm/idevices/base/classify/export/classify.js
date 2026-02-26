@@ -144,6 +144,28 @@ var $eXeClasifica = {
             }
         });
 
+        // Retrocompatibilidad: datos guardados con versión anterior podían tener
+        // numberGroups: null (parseInt(undefined) → NaN → JSON.stringify → null).
+        // Si el valor es inválido, se infiere del grupo máximo de las tarjetas.
+        const ng = parseInt(mOptions.numberGroups);
+        if (Number.isFinite(ng) && ng >= 2 && ng <= 9) {
+            mOptions.numberGroups = ng;
+        } else {
+            const maxGroup = Array.isArray(mOptions.wordsGame)
+                ? mOptions.wordsGame.reduce((max, w) => {
+                      const g = parseInt(w.group);
+                      return Number.isFinite(g) ? Math.max(max, g) : max;
+                  }, 1)
+                : 1;
+            mOptions.numberGroups = Math.min(Math.max(maxGroup + 1, 2), 9);
+        }
+
+        // Retrocompatibilidad: groups podría tener menos de 9 elementos
+        if (!Array.isArray(mOptions.groups)) mOptions.groups = [];
+        while (mOptions.groups.length < mOptions.numberGroups) {
+            mOptions.groups.push('Group ' + (mOptions.groups.length + 1));
+        }
+
         mOptions.playerAudio = '';
         mOptions.gameOver = false;
         mOptions.refreshCard = false;
@@ -220,27 +242,13 @@ var $eXeClasifica = {
                         <a href="#" id="clasificaValidateAnswers-${instance}">${msgs.msgShowAnswers}</a>
                     </div>
                     <div id="clasificaSlide-${instance}" class="CQP-Slide"></div>
-                    <div class="CQP-Container">
+                    <div class="CQP-Container" data-groups="${mOptions.numberGroups}">
+                        ${groups.map((title, i) => `
                         <div class="CQP-CC CQP-CP-${instance}">
-                            <span id="clasificaTitle0-${instance}" class="CQP-Title noselect">${groups[0]}</span>
-                            <div class="CQP-Container0 CQP-Line"></div>
-                            <div class="CQP-CC-Fill CQP-CC-${instance}" data-group="0"></div>
-                        </div>
-                        <div class="CQP-CC CQP-CP-${instance}">
-                            <span id="clasificaTitle1-${instance}" class="CQP-Title noselect">${groups[1]}</span>
-                            <div class="CQP-Container1 CQP-Line"></div>
-                            <div class="CQP-CC-Fill CQP-CC-${instance}" data-group="1"></div>
-                        </div>
-                        <div class="CQP-CC CQP-CP-${instance}">
-                            <span id="clasificaTitle2-${instance}" class="CQP-Title noselect">${groups[2]}</span>
-                            <div class="CQP-Container2 CQP-Line"></div>
-                            <div class="CQP-CC-Fill CQP-CC-${instance}" data-group="2"></div>
-                        </div>
-                        <div class="CQP-CC CQP-CP-${instance}">
-                            <span id="clasificaTitle3-${instance}" class="CQP-Title noselect">${groups[3]}</span>
-                            <div class="CQP-Container3 CQP-Line"></div>
-                            <div class="CQP-CC-Fill CQP-CC-${instance}" data-group="3"></div>
-                        </div>
+                            <span id="clasificaTitle${i}-${instance}" class="CQP-Title noselect">${title}</span>
+                            <div class="CQP-Container${i} CQP-Line"></div>
+                            <div class="CQP-CC-Fill CQP-CC-${instance}" data-group="${i}"></div>
+                        </div>`).join('')}
                     </div>
                 </div>                
                 <div class="CQP-DivFeedBack" id="clasificaDivFeedBack-${instance}">
@@ -470,7 +478,7 @@ var $eXeClasifica = {
         }
 
         if (mOptions.gameLevel !== 1)
-            messge = $eXeClasifica.getMessageAnswer(
+            message = $eXeClasifica.getMessageAnswer(
                 correctAnswer,
                 number,
                 instance
@@ -502,7 +510,12 @@ var $eXeClasifica = {
             cursor: 'move',
             containment: 'document',
             helper: 'clone',
-            appendTo: '.CQP-GameContainer-' + instance,
+            // appendTo gameContainer (not body) so the helper stays inside the
+            // fullscreen top-layer when in fullscreen mode. CQP-Multimedia now
+            // owns the overflow:hidden needed to clip CQP-Slide, while
+            // CQP-MainContainer and CQP-GameContainer stay overflow:visible,
+            // allowing the helper to extend freely without being clipped.
+            appendTo: '#clasificaGameContainer-' + instance,
             cancel: '.CQP-FullLinkImage',
             start: function (event, ui) {
                 $(this).addClass('CQP-Dragging');
@@ -1055,7 +1068,7 @@ var $eXeClasifica = {
     adjustFontSize: function ($container) {
         const $text = $container.find('.CQP-ETextDinamyc').eq(0),
             minFontSize = 10,
-            maxFontSize = 26,
+            maxFontSize = window.innerWidth <= 550 ? 14 : 26,
             widthc = $container.innerWidth(),
             heightc = $container.innerHeight();
 
