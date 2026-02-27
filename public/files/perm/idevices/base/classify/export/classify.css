@@ -427,6 +427,13 @@
     opacity: .1;
 }
 
+.CQP-TouchHelper {
+    opacity: .8;
+    cursor: move;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
 
 .CQP-Container .CQP-Card {
     box-shadow: 0 0 0 rgba(0, 0, 0, 0.20);
@@ -1087,6 +1094,7 @@ div:fullscreen .CQP-Multimedia {
         margin: 0.1em;
         box-shadow: none;
         border: 1px solid #ccc;
+        min-height: 120px;
     }
 
     .CQP-GameScoreBoard p {
