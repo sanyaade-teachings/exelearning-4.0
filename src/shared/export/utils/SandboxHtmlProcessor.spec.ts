@@ -104,7 +104,9 @@ describe('SandboxHtmlProcessor', () => {
         }
 
         const result = withMockWindow({ DOMParser: MockDOMParser }, () =>
-            SandboxHtmlProcessor.process('<div><script>console.log("browser");</script><button onclick="alert(&quot;browser&quot;)">Click</button></div>')
+            SandboxHtmlProcessor.process(
+                '<div><script>console.log("browser");</script><button onclick="alert(&quot;browser&quot;)">Click</button></div>',
+            ),
         );
 
         expect(result).toContain('console.log("browser");');
@@ -138,7 +140,9 @@ describe('SandboxHtmlProcessor', () => {
         }
 
         const result = withMockWindow({ DOMParser: MockDOMParser }, () =>
-            SandboxHtmlProcessor.process('<html><head><title>x</title></head><body><script>console.log("doc");</script></body></html>')
+            SandboxHtmlProcessor.process(
+                '<html><head><title>x</title></head><body><script>console.log("doc");</script></body></html>',
+            ),
         );
 
         expect(result.toLowerCase()).toContain('<html');
@@ -186,11 +190,13 @@ describe('SandboxHtmlProcessor', () => {
 
     it('should use regex fallback when DOMParser is unavailable', () => {
         withMockWindow(undefined, () => {
-            const html = '<div><script>const price = `Total: ${42}`;\\nconsole.log(price);</script></div>';
+            const html = `<div><script>const price = \`Total: \${42}\`;\\nconsole.log(price);</script></div>`;
             const result = SandboxHtmlProcessor.process(html);
 
             expect(result).toContain('new Sandbox');
-            expect(result).toContain('const __code = `const price = \\`Total: \\${42}\\`;\\\\nconsole.log(price);`;');
+            expect(result).toContain(
+                `const __code = \`const price = \\\`Total: \\\${42}\\\`;\\\\nconsole.log(price);\`;`,
+            );
         });
     });
 
@@ -218,7 +224,7 @@ describe('SandboxHtmlProcessor', () => {
 
         try {
             const result = withMockWindow({ DOMParser: ThrowingDOMParser }, () =>
-                SandboxHtmlProcessor.process('<div><script>alert(1)</script></div>')
+                SandboxHtmlProcessor.process('<div><script>alert(1)</script></div>'),
             );
 
             expect(consoleErrors.length).toBeGreaterThan(0);
