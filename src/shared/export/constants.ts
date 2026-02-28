@@ -325,6 +325,9 @@ export const LIBRARY_PATTERNS: LibraryPattern[] = [
 export const BASE_LIBRARIES = [
     // jQuery
     'jquery/jquery.min.js',
+    // SandboxJS
+    'sandboxjs/sandbox.min.js',
+    'sandboxjs/sandbox.min.js.map',
     // Common eXe scripts
     'common_i18n.js',
     'common.js',

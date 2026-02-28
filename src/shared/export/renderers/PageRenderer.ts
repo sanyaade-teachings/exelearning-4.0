@@ -17,6 +17,7 @@
 import type { ExportPage, PageRenderOptions } from '../interfaces';
 import { IdeviceRenderer } from './IdeviceRenderer';
 import { LIBRARY_PATTERNS, getLicenseClass, formatLicenseText, shouldShowLicenseFooter } from '../constants';
+import { SandboxHtmlProcessor } from '../utils/SandboxHtmlProcessor';
 
 /**
  * PageRenderer class
@@ -239,6 +240,7 @@ ${licenseUrl ? `<link rel="license" type="text/html" href="${licenseUrl}">\n` : 
         // Core library scripts
         head += `<script src="${basePath}libs/jquery/jquery.min.js"> </script>`;
         head += `<script src="${basePath}libs/common_i18n.js"> </script>`;
+        head += `<script src="${basePath}libs/sandboxjs/sandbox.min.js"> </script>`;
         head += `<script src="${basePath}libs/common.js"> </script>`;
         head += `<script src="${basePath}libs/exe_export.js"> </script>`;
 
@@ -320,12 +322,12 @@ ${licenseUrl ? `<link rel="license" type="text/html" href="${licenseUrl}">\n` : 
 
         // Custom head content (from project properties)
         if (extraHeadContent) {
-            head += `\n${extraHeadContent}`;
+            head += `\n${SandboxHtmlProcessor.process(extraHeadContent)}`;
         }
 
         // SCORM-specific scripts in head
         if (extraHeadScripts) {
-            head += `\n${extraHeadScripts}`;
+            head += `\n${SandboxHtmlProcessor.process(extraHeadScripts)}`;
         }
 
         return head;
@@ -757,7 +759,7 @@ ${licenseUrl ? `<link rel="license" type="text/html" href="${licenseUrl}">\n` : 
 
         let userFooterHtml = '';
         if (userFooterContent) {
-            userFooterHtml = `<div id="siteUserFooter"> <div>${userFooterContent}</div>\n</div>`;
+            userFooterHtml = `<div id="siteUserFooter"> <div>${SandboxHtmlProcessor.process(userFooterContent)}</div>\n</div>`;
         }
 
         // Skip license section for:
@@ -1023,6 +1025,7 @@ ${this.renderPageContent(page, '', projectTitle, undefined, {
 <script>document.querySelector("html").classList.add("js");</script>
 <script src="libs/jquery/jquery.min.js"> </script>
 <script src="libs/common_i18n.js"> </script>
+<script src="libs/sandboxjs/sandbox.min.js"> </script>
 <script src="libs/common.js"> </script>
 <script src="libs/exe_export.js"> </script>
 <script src="libs/bootstrap/bootstrap.bundle.min.js"> </script>
