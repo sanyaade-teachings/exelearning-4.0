@@ -265,6 +265,11 @@ main.page .page-content div {
     overflow-y: auto;
 }
 
+body#tinymce {
+    font-family: "Fredoka", Arial, Verdana, Helvetica, sans-serif;
+    font-size: 120%;
+}
+
 .js .exe-export .exe-content {
     min-height: calc(100vh - 30px);
 }
