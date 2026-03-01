@@ -26,6 +26,7 @@ import EmbeddingBridge from './core/EmbeddingBridge.js';
 import { HIDE_UI_ATTR_MAP, applyHideUI } from './core/ui-visibility.js';
 // DOM translation for static mode
 import DOMTranslator from './locate/domTranslator.js';
+import WebMCPService from './integrations/webmcp/WebMCPService.js';
 
 export default class App {
     constructor(eXeLearning) {
@@ -75,6 +76,7 @@ export default class App {
         this.electronFileOpenHandlerBound = false;
         this.pendingElectronOpenFiles = [];
         this.pendingStaticOpenFiles = [];
+        this.webmcp = new WebMCPService(this);
 
         if (!this.eXeLearning.config.isOfflineInstallation) {
             this.setupSessionMonitor();
@@ -127,6 +129,8 @@ export default class App {
         await this.flushPendingStaticOpenFilesWhenReady();
         // Process any pending Electron file-open events after project init.
         await this.flushPendingElectronOpenFilesWhenReady();
+        // Register WebMCP tools if WebMCP library is present.
+        this.webmcp.init();
         // "Not for production use" warning
         await this.showProvisionalDemoWarning();
         // To review (showProvisionalToDoWarning might be useful for future beta releases)

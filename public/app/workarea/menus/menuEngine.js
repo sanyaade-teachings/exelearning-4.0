@@ -85,6 +85,7 @@ export default class MenuEngine {
             'mobile-navbar-button-styles': 'navbar-button-styles',
             'mobile-navbar-button-preview': 'navbar-button-preview',
             'mobile-navbar-button-filemanager': 'navbar-button-filemanager',
+            'mobile-navbar-button-connect-mcp': 'navbar-button-connect-mcp',
             'mobile-navbar-button-exe-tutorial': 'navbar-button-exe-tutorial',
             'mobile-navbar-button-about-exe': 'navbar-button-about-exe',
             'mobile-navbar-button-exe-web': 'navbar-button-exe-web'
