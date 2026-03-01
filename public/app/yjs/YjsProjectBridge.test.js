@@ -2845,6 +2845,7 @@ describe('YjsProjectBridge', () => {
       const mockBlockNode = {
         blockName: 'Old Name',
         iconName: 'edit',
+        icon: { source: 'theme', value: 'edit' },
         blockNameElementText: { innerHTML: '' },
         renderBlockTitle: mock(() => {}),
         makeIconNameElement: mock(() => {}),
@@ -2870,7 +2871,39 @@ describe('YjsProjectBridge', () => {
 
       expect(mockBlockNode.blockName).toBe('New Name');
       expect(mockBlockNode.iconName).toBe('star');
+      expect(mockBlockNode.icon).toEqual({ source: 'theme', value: 'star' });
       expect(mockBlockNode.renderBlockTitle).toHaveBeenCalled();
+    });
+
+    it('updates block icon from structured icon data for remote collaborators', async () => {
+      const mockBlockNode = {
+        blockName: 'Block',
+        iconName: '',
+        icon: { source: 'none', value: '' },
+        makeIconNameElement: mock(() => {}),
+        properties: {},
+        generateBlockContentNode: mock(() => {}),
+      };
+
+      bridge.app = {
+        project: {
+          idevices: {
+            getBlockById: mock(() => mockBlockNode),
+          },
+          structure: {
+            nodeSelected: { getAttribute: () => 'page-1' },
+          },
+        },
+      };
+
+      await bridge.updateRemoteBlock(
+        { id: 'block-1', iconName: 'bi-alarm', icon: { source: 'bootstrap', value: 'alarm' } },
+        'page-1'
+      );
+
+      expect(mockBlockNode.icon).toEqual({ source: 'bootstrap', value: 'alarm' });
+      expect(mockBlockNode.iconName).toBe('bi-alarm');
+      expect(mockBlockNode.makeIconNameElement).toHaveBeenCalled();
     });
 
     it('updates block with properties object', async () => {

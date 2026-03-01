@@ -62,7 +62,13 @@ class MockResourceProvider implements ResourceProvider {
     }
 
     async fetchLibraryFiles(_files: string[]): Promise<Map<string, Buffer>> {
-        return new Map();
+        const files = new Map<string, Buffer>();
+        for (const file of _files) {
+            if (file.startsWith('bootstrap-icons/icons/')) {
+                files.set(file, Buffer.from(`<svg data-icon="${file}"></svg>`));
+            }
+        }
+        return files;
     }
 
     async fetchScormFiles(_version: string): Promise<Map<string, Buffer>> {
@@ -349,6 +355,42 @@ describe('Scorm12Exporter', () => {
 
             expect(html).toContain('exe-scorm');
             expect(html).toContain('exe-scorm12');
+        });
+
+        it('should inline bootstrap icon SVGs as data URIs in SCORM 1.2 HTML', () => {
+            const pagesWithBootstrapIcon: ExportPage[] = [
+                {
+                    id: 'page-1',
+                    title: 'Introduction',
+                    parentId: null,
+                    order: 0,
+                    blocks: [
+                        {
+                            id: 'block-1',
+                            name: 'Content',
+                            order: 0,
+                            iconName: 'bi-lightbulb',
+                            icon: { source: 'bootstrap', value: 'lightbulb' },
+                            components: [],
+                        },
+                    ],
+                },
+            ];
+
+            const html = exporter.generateScormPageHtml(
+                pagesWithBootstrapIcon[0],
+                pagesWithBootstrapIcon,
+                document.getMetadata(),
+                true,
+                [],
+                0,
+                null,
+                undefined,
+                new Map([['lightbulb', 'data:image/svg+xml;utf8,%3Csvg%3E%3C%2Fsvg%3E']]),
+            );
+
+            expect(html).toContain('data:image/svg+xml;utf8,');
+            expect(html).not.toContain('libs/bootstrap-icons/icons/lightbulb.svg');
         });
     });
 

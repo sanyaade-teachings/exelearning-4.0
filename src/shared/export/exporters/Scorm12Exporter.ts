@@ -85,6 +85,8 @@ export class Scorm12Exporter extends Html5Exporter {
 
             // Configure iDevice renderer with theme files for icon resolution
             this.ideviceRenderer.setThemeIconFiles(themeFilesMap);
+            const { files: bootstrapIconFiles, dataUris: bootstrapIconDataUris } =
+                await this.resolveBootstrapIconDataUris(pages);
 
             // 1. Generate HTML pages (with SCORM support, optional LaTeX and Mermaid pre-rendering)
             let latexWasRendered = false;
@@ -102,6 +104,7 @@ export class Scorm12Exporter extends Html5Exporter {
                     i,
                     faviconInfo,
                     pageFilenameMap,
+                    bootstrapIconDataUris,
                 );
 
                 // Pre-render LaTeX ONLY if addMathJax is false
@@ -229,6 +232,11 @@ export class Scorm12Exporter extends Html5Exporter {
             } catch {
                 // No base libraries available
             }
+
+            this.addPrefixedFiles(bootstrapIconFiles, 'libs/', (path, content) => {
+                this.zip.addFile(path, content);
+                commonFiles.push(path);
+            });
 
             // 4.5. Generate localized i18n file
             const i18nContent = generateI18nScript(meta.language || 'en');
@@ -377,6 +385,7 @@ export class Scorm12Exporter extends Html5Exporter {
         pageIndex?: number,
         faviconInfo?: FaviconInfo | null,
         pageFilenameMap?: Map<string, string>,
+        bootstrapIconDataUris?: Map<string, string>,
     ): string {
         const basePath = isIndex ? '' : '../';
         const usedIdevices = this.getUsedIdevicesForPage(page);
@@ -435,6 +444,7 @@ export class Scorm12Exporter extends Html5Exporter {
             faviconType: faviconInfo?.type,
             // Page filename map for navigation links (handles title collisions)
             pageFilenameMap,
+            bootstrapIconDataUris,
             // Application version for generator meta tag
             version: meta.exelearningVersion,
         });

@@ -90,6 +90,7 @@ export class PageRenderer {
             hideNavButtons = false,
             // Asset URL transformation map
             assetExportPathMap,
+            bootstrapIconDataUris,
             // Application version for generator meta tag
             version,
         } = options;
@@ -102,11 +103,18 @@ export class PageRenderer {
         const detectedLibraries = this.detectContentLibraries(originalContent);
 
         // Render page content (includes exe-package:elp → onclick transformation)
-        const pageContent = this.renderPageContent(page, basePath, projectTitle, assetExportPathMap, {
-            author: options.author,
-            description: options.description,
-            license: options.license,
-        });
+        const pageContent = this.renderPageContent(
+            page,
+            basePath,
+            projectTitle,
+            assetExportPathMap,
+            {
+                author: options.author,
+                description: options.description,
+                license: options.license,
+            },
+            bootstrapIconDataUris,
+        );
 
         // Calculate page counter values
         const total = totalPages ?? allPages.length;
@@ -599,6 +607,7 @@ ${licenseUrl ? `<link rel="license" type="text/html" href="${licenseUrl}">\n` : 
         projectTitle?: string,
         assetExportPathMap?: Map<string, string>,
         metadata?: { author?: string; description?: string; license?: string },
+        bootstrapIconDataUris?: Map<string, string>,
     ): string {
         let html = '';
 
@@ -607,6 +616,7 @@ ${licenseUrl ? `<link rel="license" type="text/html" href="${licenseUrl}">\n` : 
                 basePath,
                 includeDataAttributes: true,
                 assetExportPathMap,
+                bootstrapIconDataUris,
             });
         }
 
@@ -929,6 +939,7 @@ ${userFooterHtml}</div></footer>`;
             version?: string;
             addExeLink?: boolean;
             userFooterContent?: string;
+            bootstrapIconDataUris?: Map<string, string>;
         } = {},
     ): string {
         const {
@@ -948,6 +959,7 @@ ${userFooterHtml}</div></footer>`;
             detectedLibraries = [],
             addMathJax = false,
             addAccessibilityToolbar = false,
+            bootstrapIconDataUris,
         } = options;
 
         let contentHtml = '';
@@ -974,11 +986,18 @@ ${userFooterHtml}</div></footer>`;
 </div>
 </header>
 <div class="page-content">
-${this.renderPageContent(page, '', projectTitle, undefined, {
-    author: options.author,
-    description: options.description,
-    license: options.license,
-})}
+${this.renderPageContent(
+    page,
+    '',
+    projectTitle,
+    undefined,
+    {
+        author: options.author,
+        description: options.description,
+        license: options.license,
+    },
+    bootstrapIconDataUris,
+)}
 </div>
 </section>\n`;
         }

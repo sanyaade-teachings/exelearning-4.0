@@ -51,6 +51,8 @@ export class PageExporter extends Html5Exporter {
 
             // Get all iDevice types used in the project
             const usedIdevices = this.getUsedIdevices(pages);
+            const { files: bootstrapIconFiles, dataUris: bootstrapIconDataUris } =
+                await this.resolveBootstrapIconDataUris(pages);
 
             // 4. Fetch and add theme
             const { themeFilesMap, faviconInfo } = await this.prepareThemeData(themeName);
@@ -100,7 +102,15 @@ export class PageExporter extends Html5Exporter {
 
             // 1. Generate single-page HTML with all content
 
-            const html = this.generateSinglePageHtml(pages, meta, usedIdevices, faviconInfo);
+            const html = this.generateSinglePageHtml(
+                pages,
+                meta,
+                usedIdevices,
+                faviconInfo,
+                [],
+                false,
+                bootstrapIconDataUris,
+            );
             this.zip.addFile('index.html', html);
 
             // 2. Add base CSS (fetch from content/css)
@@ -139,6 +149,10 @@ export class PageExporter extends Html5Exporter {
             } catch {
                 // No base libraries available
             }
+
+            this.addPrefixedFiles(bootstrapIconFiles, 'libs/', (path, content) => {
+                this.zip.addFile(path, content);
+            });
 
             // 5.b Detect and fetch additional required libraries based on content
             // This is crucial for things like MathJax, Tooltips, etc.
@@ -181,6 +195,7 @@ export class PageExporter extends Html5Exporter {
                 faviconInfo,
                 patterns.map(p => p.name),
                 meta.addMathJax === true,
+                bootstrapIconDataUris,
             );
             this.zip.addFile(options?.filename || 'index.html', singlePageHtml);
 
@@ -226,6 +241,7 @@ export class PageExporter extends Html5Exporter {
         faviconInfo?: FaviconInfo | null,
         detectedLibraries: string[] = [],
         addMathJax = false,
+        bootstrapIconDataUris?: Map<string, string>,
     ): string {
         return this.pageRenderer.renderSinglePage(pages, {
             projectTitle: meta.title || 'eXeLearning',
@@ -241,6 +257,7 @@ export class PageExporter extends Html5Exporter {
             version: meta.exelearningVersion,
             detectedLibraries,
             addMathJax,
+            bootstrapIconDataUris,
         });
     }
 

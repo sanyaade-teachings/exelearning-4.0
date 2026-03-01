@@ -1169,6 +1169,17 @@ describe('YjsStructureBinding', () => {
       expect(result).toBe(true);
     });
 
+    it('reconstructs asset icon from iconName when only iconName is provided', () => {
+      const result = binding.updateBlock('block-1', {
+        iconName: 'asset://uuid-123/icon.jpg',
+      });
+
+      expect(result).toBe(true);
+      const blocks = binding.getBlocks('page-1');
+      expect(blocks[0].iconName).toBe('asset://uuid-123/icon.jpg');
+      expect(blocks[0].icon).toEqual({ source: 'asset', value: 'asset://uuid-123/icon.jpg' });
+    });
+
     it('returns false for non-existent block', () => {
       const result = binding.updateBlock('non-existent', { blockName: 'Test' });
       expect(result).toBe(false);

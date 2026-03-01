@@ -28,6 +28,61 @@ import { GlobalFontGenerator } from '../utils/GlobalFontGenerator';
 import { generateI18nScript } from '../generators/I18nGenerator';
 
 export class Html5Exporter extends BaseExporter {
+    protected addAssetReferenceCandidates(assetPath: string, assetIds: Set<string>): void {
+        if (!assetPath) return;
+
+        assetIds.add(assetPath);
+
+        const basename = assetPath.includes('/') ? assetPath.split('/').pop() || assetPath : assetPath;
+        assetIds.add(basename);
+
+        const withoutExtension = basename.replace(/\.[a-z0-9]+$/i, '');
+        if (withoutExtension && withoutExtension !== basename) {
+            assetIds.add(withoutExtension);
+        }
+
+        const fullWithoutExtension = assetPath.replace(/\.[a-z0-9]+$/i, '');
+        if (fullWithoutExtension && fullWithoutExtension !== assetPath) {
+            assetIds.add(fullWithoutExtension);
+        }
+    }
+
+    private getReferencedAssetIds(pages: ExportPage[]): Set<string> {
+        const assetIds = new Set<string>();
+        const assetPattern = /asset:\/\/([^"')\s>]+)/gi;
+
+        for (const page of pages) {
+            for (const block of page.blocks || []) {
+                const blockIconValue = block.icon?.source === 'asset' ? block.icon.value : block.iconName || '';
+                if (typeof blockIconValue === 'string' && blockIconValue.startsWith('asset://')) {
+                    const matches = blockIconValue.matchAll(assetPattern);
+                    for (const match of matches) {
+                        this.addAssetReferenceCandidates(match[1], assetIds);
+                    }
+                }
+
+                for (const component of block.components || []) {
+                    if (component.content) {
+                        const matches = component.content.matchAll(assetPattern);
+                        for (const match of matches) {
+                            this.addAssetReferenceCandidates(match[1], assetIds);
+                        }
+                    }
+
+                    if (component.properties && Object.keys(component.properties).length > 0) {
+                        const propsStr = JSON.stringify(component.properties);
+                        const matches = propsStr.matchAll(assetPattern);
+                        for (const match of matches) {
+                            this.addAssetReferenceCandidates(match[1], assetIds);
+                        }
+                    }
+                }
+            }
+        }
+
+        return assetIds;
+    }
+
     private getBrowserLatexPreRenderer(): {
         preRender: (
             html: string,
@@ -110,6 +165,8 @@ export class Html5Exporter extends BaseExporter {
 
             // Build asset export path map for URL transformation
             const assetExportPathMap = await this.buildAssetExportPathMap();
+            const { files: bootstrapIconFiles, dataUris: bootstrapIconDataUris } =
+                await this.resolveBootstrapIconDataUris(pages);
 
             // 1. Generate HTML pages (with optional LaTeX and Mermaid pre-rendering)
             const pageHtmlMap = new Map<string, string>();
@@ -128,6 +185,7 @@ export class Html5Exporter extends BaseExporter {
                     faviconInfo,
                     pageFilenameMap,
                     assetExportPathMap,
+                    bootstrapIconDataUris,
                 );
 
                 // Pre-render LaTeX ONLY if addMathJax is false
@@ -261,6 +319,8 @@ export class Html5Exporter extends BaseExporter {
             } catch {
                 // Base libraries not available - continue anyway
             }
+
+            this.addPrefixedFiles(bootstrapIconFiles, 'libs/', addFile);
 
             // 7.5. Generate localized i18n file
             const i18nContent = generateI18nScript(meta.language || 'en');
@@ -403,6 +463,7 @@ export class Html5Exporter extends BaseExporter {
         faviconInfo?: FaviconInfo | null,
         pageFilenameMap?: Map<string, string>,
         assetExportPathMap?: Map<string, string>,
+        bootstrapIconDataUris?: Map<string, string>,
     ): string {
         const basePath = isIndex ? '' : '../';
         const usedIdevices = this.getUsedIdevicesForPage(page);
@@ -460,6 +521,7 @@ export class Html5Exporter extends BaseExporter {
             pageFilenameMap,
             // Asset URL transformation map
             assetExportPathMap,
+            bootstrapIconDataUris,
             // Application version for generator meta tag
             version: meta.exelearningVersion,
         });
@@ -596,6 +658,8 @@ export class Html5Exporter extends BaseExporter {
 
             // Build asset export path map for URL transformation
             const assetExportPathMap = await this.buildAssetExportPathMap();
+            const { files: bootstrapIconFiles, dataUris: bootstrapIconDataUris } =
+                await this.resolveBootstrapIconDataUris(pages);
 
             // 1. Generate HTML pages (with optional LaTeX and Mermaid pre-rendering)
             const pageHtmlMap = new Map<string, string>();
@@ -614,6 +678,7 @@ export class Html5Exporter extends BaseExporter {
                     faviconInfo,
                     pageFilenameMap,
                     assetExportPathMap,
+                    bootstrapIconDataUris,
                 );
 
                 // Pre-render LaTeX ONLY if addMathJax is false
@@ -724,6 +789,8 @@ export class Html5Exporter extends BaseExporter {
                 // Base libraries not available - continue anyway
             }
 
+            this.addPrefixedFiles(bootstrapIconFiles, 'libs/', addFile, filePath => files.has(filePath));
+
             // 7.5. Generate localized i18n file
             const i18nContent = generateI18nScript(meta.language || 'en');
             addFile('libs/common_i18n.js', new TextEncoder().encode(i18nContent));
@@ -787,7 +854,8 @@ export class Html5Exporter extends BaseExporter {
             }
 
             // 10. Add project assets
-            await this.addAssetsToPreviewFiles(files, fileList);
+            const referencedAssetIds = this.getReferencedAssetIds(pages);
+            await this.addAssetsToPreviewFiles(files, fileList, referencedAssetIds);
 
             // 11. Generate ELPX manifest file and ensure required libraries if download-source-file is used
             if (needsElpxDownload && fileList) {
@@ -852,6 +920,7 @@ export class Html5Exporter extends BaseExporter {
     private async addAssetsToPreviewFiles(
         files: Map<string, Uint8Array | string>,
         trackingList?: string[] | null,
+        referencedAssetIds?: Set<string>,
     ): Promise<number> {
         let assetsAdded = 0;
 
@@ -860,6 +929,9 @@ export class Html5Exporter extends BaseExporter {
             const exportPathMap = await this.buildAssetExportPathMap();
 
             for (const asset of assets) {
+                if (referencedAssetIds && referencedAssetIds.size > 0 && !referencedAssetIds.has(asset.id)) {
+                    continue;
+                }
                 const exportPath = exportPathMap.get(asset.id);
                 if (!exportPath) continue;
 
