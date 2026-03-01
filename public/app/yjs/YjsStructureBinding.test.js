@@ -1180,6 +1180,28 @@ describe('YjsStructureBinding', () => {
       expect(blocks[0].icon).toEqual({ source: 'asset', value: 'asset://uuid-123/icon.jpg' });
     });
 
+    it('updates iconName when structured bootstrap icon is provided', () => {
+      const result = binding.updateBlock('block-1', {
+        icon: { source: 'bootstrap', value: 'alarm' },
+      });
+
+      expect(result).toBe(true);
+      const blocks = binding.getBlocks('page-1');
+      expect(blocks[0].iconName).toBe('bi-alarm');
+      expect(blocks[0].icon).toEqual({ source: 'bootstrap', value: 'alarm' });
+    });
+
+    it('reconstructs bootstrap icon from iconName when icon map is absent', () => {
+      const result = binding.updateBlock('block-1', {
+        iconName: 'bi-book',
+      });
+
+      expect(result).toBe(true);
+      const blocks = binding.getBlocks('page-1');
+      expect(blocks[0].iconName).toBe('bi-book');
+      expect(blocks[0].icon).toEqual({ source: 'bootstrap', value: 'book' });
+    });
+
     it('returns false for non-existent block', () => {
       const result = binding.updateBlock('non-existent', { blockName: 'Test' });
       expect(result).toBe(false);
@@ -3007,6 +3029,21 @@ describe('YjsStructureBinding', () => {
       integrateYType(blockMap);
 
       expect(blockMap.get('blockName')).toBe('');
+    });
+
+    it('creates structured bootstrap icon from legacy iconName', () => {
+      const apiBlock = {
+        blockId: 'block-2',
+        blockName: 'Bootstrap Block',
+        iconName: 'bi-alarm',
+        odeComponentsSyncs: [],
+      };
+
+      const blockMap = binding.createBlockMapFromApi(apiBlock);
+      integrateYType(blockMap);
+
+      expect(blockMap.get('iconName')).toBe('bi-alarm');
+      expect(blockMap.get('icon')).toEqual({ source: 'bootstrap', value: 'alarm' });
     });
   });
 

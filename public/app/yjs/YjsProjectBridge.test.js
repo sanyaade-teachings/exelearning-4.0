@@ -5864,6 +5864,60 @@ describe('YjsProjectBridge', () => {
       expect(mockIconEl.innerHTML).toBe(originalHtml);
     });
 
+    it('renders bootstrap icons with the shared mask runtime', () => {
+      const mockIconEl = {
+        innerHTML: '',
+        style: {
+          removeProperty: mock(() => {}),
+        },
+        classList: {
+          add: mock(() => {}),
+          remove: mock(() => {}),
+          contains: () => true,
+        },
+        querySelector: () => null,
+      };
+
+      bridge._syncBlockIcon(mockIconEl, { source: 'bootstrap', value: 'alarm' }, 'block-1');
+
+      expect(mockIconEl.innerHTML).toContain('class="exe-bootstrap-icon"');
+      expect(mockIconEl.innerHTML).toContain('alarm.svg');
+      expect(mockIconEl.classList.remove).toHaveBeenCalledWith('exe-no-icon');
+      expect(mockIconEl.style.removeProperty).toHaveBeenCalledWith('color');
+    });
+
+    it('renders asset icons using resolved asset URLs', () => {
+      window.eXeLearning = {
+        app: {
+          project: {
+            _yjsBridge: {
+              assetManager: {
+                resolveAssetURLSync: () => 'blob:asset-icon',
+              },
+            },
+          },
+          themes: {
+            getThemeIcons: () => ({}),
+          },
+        },
+      };
+
+      const mockIconEl = {
+        innerHTML: '',
+        classList: {
+          add: mock(() => {}),
+          remove: mock(() => {}),
+          contains: () => true,
+        },
+        querySelector: () => null,
+      };
+
+      bridge._syncBlockIcon(mockIconEl, { source: 'asset', value: 'asset://uuid-123/icon.jpg' }, 'block-1');
+
+      expect(mockIconEl.innerHTML).toContain('blob:asset-icon');
+      expect(mockIconEl.classList.remove).toHaveBeenCalledWith('exe-no-icon');
+    });
+
     it('does not clear icon when already showing empty SVG', () => {
       const mockIconEl = {
         innerHTML: '<svg>empty</svg>',

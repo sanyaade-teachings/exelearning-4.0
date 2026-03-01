@@ -987,6 +987,97 @@ describe('IdeviceBlockNode', () => {
         });
     });
 
+    describe('icon helpers', () => {
+        it('normalizes legacy icon names into structured descriptors', () => {
+            expect(block.normalizeIconDescriptor(null, '')).toEqual({ source: 'none', value: '' });
+            expect(block.normalizeIconDescriptor(null, 'bi-alarm')).toEqual({
+                source: 'bootstrap',
+                value: 'alarm',
+                name: 'alarm',
+            });
+            expect(block.normalizeIconDescriptor(null, 'activity')).toEqual({
+                source: 'bootstrap',
+                value: 'list-check',
+                name: 'list-check',
+            });
+            expect(block.normalizeIconDescriptor(null, 'asset://uuid/icon.jpg')).toEqual({
+                source: 'asset',
+                value: 'asset://uuid/icon.jpg',
+                name: 'asset://uuid/icon.jpg',
+            });
+            expect(block.normalizeIconDescriptor(null, 'legacy-theme')).toEqual({
+                source: 'theme',
+                value: 'legacy-theme',
+                name: 'legacy-theme',
+            });
+        });
+
+        it('resolves app asset URLs using composeUrl and basePath fallbacks', () => {
+            eXeLearning.app.composeUrl = vi.fn((path) => `/composed${path}`);
+            expect(block.resolveAppAssetUrl('/libs/bootstrap-icons/icons/alarm.svg')).toBe(
+                '/composed/libs/bootstrap-icons/icons/alarm.svg'
+            );
+
+            delete eXeLearning.app.composeUrl;
+            window.eXeLearning.config = JSON.stringify({ basePath: '/exe' });
+            expect(block.resolveAppAssetUrl('/libs/bootstrap-icons/icons/alarm.svg')).toBe(
+                '/exe/libs/bootstrap-icons/icons/alarm.svg'
+            );
+        });
+
+        it('returns renderable asset URL for asset refs, public paths and passthrough values', () => {
+            eXeLearning.app.project._yjsBridge = {
+                assetManager: {
+                    resolveAssetURLSync: vi.fn(() => 'blob:asset-ref'),
+                    extractAssetId: vi.fn(() => 'uuid-123'),
+                    generateLoadingPlaceholder: vi.fn(() => 'data:image/svg+xml,loading'),
+                },
+            };
+
+            expect(block.getRenderableAssetUrl('asset://uuid-123/icon.jpg')).toBe('blob:asset-ref');
+            expect(block.getRenderableAssetUrl('/icons/theme.svg')).toContain('/icons/theme.svg');
+            expect(block.getRenderableAssetUrl('https://example.com/icon.svg')).toBe('https://example.com/icon.svg');
+        });
+
+        it('renders bootstrap sprite icon with fallback symbol for invalid names', () => {
+            const html = block.renderBootstrapSpriteIcon('not-in-catalog');
+            expect(html).toContain('exe-bootstrap-icon-sprite');
+            expect(html).toContain('/libs/bootstrap-icons/bootstrap-icons.svg#question-circle');
+        });
+
+        it('filters only bootstrap icon tiles from the search query', () => {
+            const body = block.makeModalChangeIconBody();
+            const icons = body.querySelectorAll('.option-block-icon');
+            block.filterModalBootstrapIcons(icons, 'alarm');
+
+            const alarm = body.querySelector('.option-block-icon[data-icon-value="alarm"]');
+            const book = body.querySelector('.option-block-icon[data-icon-value="book"]');
+            const empty = body.querySelector('.empty-block-icon');
+
+            expect(alarm.style.display).toBe('');
+            expect(book.style.display).toBe('none');
+            expect(empty.style.display).toBe('');
+        });
+
+        it('prefers theme css variables and known theme colors when resolving modal icon color', () => {
+            block.headElement = document.createElement('div');
+            document.body.appendChild(block.headElement);
+            block.headElement.style.setProperty('--exe-icon-color', '#123456');
+            expect(block.getCurrentThemeIconColor()).toBe('#123456');
+
+            block.headElement.style.removeProperty('--exe-icon-color');
+            block.blockNameElementText = document.createElement('h1');
+            document.body.appendChild(block.blockNameElementText);
+            block.blockNameElementText.style.color = 'rgb(1, 2, 3)';
+            expect(block.getCurrentThemeIconColor()).toBe('rgb(1, 2, 3)');
+
+            block.headElement = null;
+            block.blockNameElementText = null;
+            eXeLearning.app.themes.selected = { id: 'flux' };
+            expect(block.getCurrentThemeIconColor()).toBe('#e3ac3b');
+        });
+    });
+
     describe('goWindowToBlock', () => {
         beforeEach(() => {
             vi.useFakeTimers();
@@ -1261,6 +1352,7 @@ describe('IdeviceBlockNode', () => {
 
     describe('makeIconValueElement', () => {
         it('creates img element with src and alt', () => {
+            window.eXeLearning.config = {};
             const icon = { value: '/path/to/icon.svg', title: 'Test Icon' };
             const iconValue = block.makeIconValueElement(icon);
             expect(iconValue.tagName).toBe('IMG');
