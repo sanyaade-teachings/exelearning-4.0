@@ -99,24 +99,23 @@ export default class IdevicesEngine {
         // Add class to dragged element
         this.draggedElement.classList.add('idevice-content-block');
         this.draggedElement.classList.add('idevice-element-in-content');
+        // When container is a block article, iDevices live inside .box-content
+        const insertTarget = container.querySelector(':scope > .box-content') || container;
         // Element after draggable element
         // Exclude box-head elements - iDevices can only be placed after the header, not before it
         let query = '.idevice-element-in-content.draggable:not(.dragging):not(.box-head)';
-        let otherElements = [...container.querySelectorAll(query)];
+        let otherElements = [...insertTarget.querySelectorAll(query)];
         let afterElement = this.getDragAfterElement(ypos, otherElements);
         if (afterElement) {
-            // Insert before element of container
-            if (container == afterElement.parentNode) {
-                container.insertBefore(this.draggedElement, afterElement);
-            } else {
-                container.insertBefore(
-                    this.draggedElement,
-                    afterElement.parentNode
-                );
+            // Walk up to find the direct child of insertTarget (handles nested elements)
+            let refNode = afterElement;
+            while (refNode.parentNode && refNode.parentNode !== insertTarget) {
+                refNode = refNode.parentNode;
             }
+            insertTarget.insertBefore(this.draggedElement, refNode);
         } else {
             // Insert in last position of container
-            container.append(this.draggedElement);
+            insertTarget.append(this.draggedElement);
         }
     }
 
@@ -127,20 +126,23 @@ export default class IdevicesEngine {
      * @param {*} ypos
      */
     moveIdeviceContentToContent(container, ypos) {
+        // When container is a block article, iDevices live inside .box-content
+        const insertTarget = container.querySelector(':scope > .box-content') || container;
         // Element after draggable element
         // Exclude box-head elements - iDevices can only be placed after the header, not before it
         let query = '.idevice-element-in-content.draggable:not(.dragging):not(.box-head)';
-        let otherElements = [...container.querySelectorAll(query)];
+        let otherElements = [...insertTarget.querySelectorAll(query)];
         let afterElement = this.getDragAfterElement(ypos, otherElements);
         if (afterElement) {
-            // Insert before element of container
-            if (container !== afterElement.parentNode) {
-                afterElement = afterElement.parentNode;
+            // Walk up to find the direct child of insertTarget (handles nested elements)
+            let refNode = afterElement;
+            while (refNode.parentNode && refNode.parentNode !== insertTarget) {
+                refNode = refNode.parentNode;
             }
-            container.insertBefore(this.draggedElement, afterElement);
+            insertTarget.insertBefore(this.draggedElement, refNode);
         } else {
             // Insert in last position of container
-            container.append(this.draggedElement);
+            insertTarget.append(this.draggedElement);
         }
     }
 
@@ -1026,8 +1028,8 @@ export default class IdevicesEngine {
             cloneIdeviceData,
             blockContent
         );
-        // Move
-        blockContent.insertBefore(
+        // Move (reposition clone immediately after the original within box-content)
+        blockNode.boxContent.insertBefore(
             cloneIdeviceNode.ideviceContent,
             originalIdevice.ideviceContent.nextSibling
         );
@@ -1150,7 +1152,7 @@ export default class IdevicesEngine {
             // Generate new block
             let ideviceBlockNode = this.newBlockNode(blockData, true);
             let ideviceBlockNodeContent = ideviceBlockNode.blockContent;
-            ideviceBlockNodeContent.append(ideviceNodeContent);
+            ideviceBlockNode.boxContent.append(ideviceNodeContent);
             // Set block data to idevice
             this.setBlockDataToIdeviceNode(ideviceNode, ideviceBlockNode);
             // Insert block into node content
@@ -1167,8 +1169,8 @@ export default class IdevicesEngine {
                 }
                 // Set block ids
                 this.setBlockDataToIdeviceNode(ideviceNode, ideviceBlockNode);
-                // Insert idevice into block
-                container.insertBefore(ideviceNodeContent, this.draggedElement);
+                // Insert idevice into block's box-content wrapper
+                ideviceBlockNode.boxContent.insertBefore(ideviceNodeContent, this.draggedElement);
             }
         }
         // Move window to idevice element
@@ -1447,7 +1449,7 @@ export default class IdevicesEngine {
 
         // Generate content and add to DOM
         const ideviceContent = ideviceNode.makeIdeviceContentNode(true);
-        const blockBody = blockContainer.querySelector('.box-body') || blockContainer;
+        const blockBody = blockContainer.querySelector('.box-content') || blockContainer;
         blockBody.appendChild(ideviceContent);
 
         // Set block reference
@@ -2587,39 +2589,41 @@ export default class IdevicesEngine {
      *
      */
     enableInternalLinks() {
-        let eXeNodeLinks = document.querySelectorAll("a[href^='exe-node']");
-        if (eXeNodeLinks.length > 0) {
-            let pages = eXeLearning.app.project.structure.data;
-            let buttonsPages = document.querySelectorAll('.nav-element-text');
+        const eXeNodeLinks = document.querySelectorAll("a[href^='exe-node:']");
+        if (eXeNodeLinks.length === 0) return;
 
-            eXeNodeLinks.forEach((link) => {
-                let pageElement = null;
-                let pageName = 'nopage';
-                let pageId = link.href.replace('exe-node:', '');
+        eXeNodeLinks.forEach((link) => {
+            // Use getAttribute for reliable custom-protocol handling
+            const href = link.getAttribute('href') || '';
+            const withoutProtocol = href.replace(/^exe-node:/, '');
+            const hashIdx = withoutProtocol.indexOf('#');
+            const pageId = hashIdx !== -1 ? withoutProtocol.substring(0, hashIdx) : withoutProtocol;
+            const anchorId = hashIdx !== -1 ? withoutProtocol.substring(hashIdx + 1) : null;
 
-                pages.forEach((page) => {
-                    if (page.pageId === pageId) {
-                        pageName = page.pageName;
+            // Navigate directly by nav-id (reliable, no pageName matching needed)
+            const navButton = document.querySelector(`.nav-element[nav-id="${pageId}"] > .nav-element-text`);
+            if (navButton) {
+                link.onclick = function (event) {
+                    event.preventDefault();
+                    navButton.click();
+                    if (anchorId) {
+                        // Poll until the anchor element appears in the newly loaded page
+                        let attempts = 0;
+                        const maxAttempts = 20;
+                        const scrollToAnchor = () => {
+                            const target = document.getElementById(anchorId)
+                                || document.querySelector(`[name="${anchorId}"]`);
+                            if (target) {
+                                target.scrollIntoView({ behavior: 'smooth' });
+                            } else if (++attempts < maxAttempts) {
+                                setTimeout(scrollToAnchor, 100);
+                            }
+                        };
+                        setTimeout(scrollToAnchor, 100);
                     }
-                });
-
-                buttonsPages.forEach((button) => {
-                    if (
-                        button.className == 'nav-element-text' &&
-                        button.innerText == pageName
-                    ) {
-                        pageElement = button;
-                    }
-                });
-
-                if (pageElement) {
-                    link.onclick = function (event) {
-                        event.preventDefault();
-                        pageElement.click();
-                    };
-                }
-            });
-        }
+                };
+            }
+        });
     }
 
     /**
