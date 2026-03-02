@@ -74,9 +74,12 @@ export class SandboxHtmlProcessor {
             // Only serialize if we made changes
             if (hasChanges) {
                 // DOMParser adds <html><head><body> tags if they weren't there.
-                // We need to extract just the body content if the original HTML didn't have <html>.
+                // We need to extract just the fragment content if the original HTML didn't have <html>.
                 if (!html.toLowerCase().includes('<html')) {
-                    return document.body.innerHTML;
+                    // Bare <script> tags parsed as text/html go to <head> (HTML5 parser rule),
+                    // while block elements like <div> go to <body>.
+                    // Return head + body to capture all modified content.
+                    return (document.head.innerHTML + document.body.innerHTML).trim() || html;
                 }
                 return document.documentElement.outerHTML;
             }
@@ -143,7 +146,7 @@ export class SandboxHtmlProcessor {
 try {
     const __code = \`${escapedCode}\`;
     const __sandbox = new Sandbox({
-        globals: { ...Sandbox.SAFE_GLOBALS, document, window, console, alert, Math, RegExp, Date, setTimeout, setInterval, clearTimeout, clearInterval }
+        globals: { ...Sandbox.SAFE_GLOBALS, document, window, console, alert: alert.bind(window), Math, RegExp, Date, setTimeout: setTimeout.bind(window), setInterval: setInterval.bind(window), clearTimeout: clearTimeout.bind(window), clearInterval: clearInterval.bind(window) }
     });
     const __exec = __sandbox.compile(__code);
     ${isEventContext ? 'return ' : ''}__exec({ this: this, event: typeof event !== 'undefined' ? event : null }).run();
